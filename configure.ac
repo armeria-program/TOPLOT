@@ -1,6 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-AC_INIT(toplot, 1.0.1, jens@jkleinj.eu)
+AC_INIT(toplot, 1.1, jens@jkleinj.eu)
 
 AC_PREREQ([2.63])
 AC_CONFIG_SRCDIR([src/arg.c])
@@ -30,6 +30,7 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([pow sqrt])
 
 AC_CONFIG_FILES([Makefile
-                 src/Makefile])
+                 src/Makefile
+				 tests/Makefile])
 
 AC_OUTPUT

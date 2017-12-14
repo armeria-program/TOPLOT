@@ -41,11 +41,11 @@ Documentation files for HTML, LaTeX and man pages will be created in the
 
 
 ## Usage
-Run with switch '--help' for usage instructions.
-	
-- INPUT: protein structure in PDB format, single domain, contiguous backbone
 ```
-toplot --protein <protein file>
+	toplot --pdb <protein file>
+	  OPTIONS
+		--pdb	<PDB input>
+		--help
 ```
 
 - OUTPUT:	Topology string of protein

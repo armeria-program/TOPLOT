@@ -83,17 +83,14 @@ void read_pdb(FILE *pdbfile, Str *str, int *allatom)
 
 	/* allocate memory for sequence residues */
 	str->sequence.res = safe_malloc(allocated * sizeof(char));
-	if (allatom) 
-	{
+	if (allatom) {
 		str->phi  = safe_malloc(allocated * sizeof(float [6]));
 		str->psi  = safe_malloc(allocated * sizeof(float [6]));
 		str->ss   = safe_malloc(allocated * sizeof(int [2]));
 	}
 
 	/* not all PDB data types are used in this program to save resources */
-    while(! feof(pdbfile))
-    {
-        fgets(line, 80, pdbfile); /* read line */
+    while(fgets(line, 80, pdbfile)) { /* read line */
 
 		/* record name */
 		if(strncmp(line, "ATOM  ", 6) != 0)
@@ -130,8 +127,7 @@ void read_pdb(FILE *pdbfile, Str *str, int *allatom)
 		/* skip duplicate assignments, 
 		e.g. when alternative locations are specified */
 		/* scan backwards for identical atom name in same residue */
-		for (l = 1; l < str->natom; ++ l)
-		{
+		for (l = 1; l < str->natom; ++ l) {
 			/*fprintf(stderr, "l=%d res0=%d, res1=%d\n", 
 				l,  str->atom[str->natom].res_nr, str->atom[str->natom - l].res_nr);*/
 			if (str->atom[str->natom].res_nr == str->atom[str->natom - l].res_nr)
@@ -230,9 +226,7 @@ int read_all_pdb(FILE *pdbfile, Str *str, int *allatom)
 	fseek(pdbfile, 0, 0);
 
 	/* for comments see routine above */
-    while(! feof(pdbfile))
-    {
-        fgets(line, 80, pdbfile); /* read line */
+    while(fgets(line, 80, pdbfile)) { /* read line */
 
 		if(strncmp(line, "ATOM  ", 6) != 0)
 			continue;

@@ -11,12 +11,14 @@ arg.c : parse command line arguments
 /* parse GA command line long_options */
 void usage( void )
 {
-	fprintf(stdout, "\nTOPLOT: TOPology pLOT\n"
-					"(C) 2006-2010 Jens Kleinjung\n");
-	fprintf(stdout, "\nUsage:  \ttoplot --protein <protein file>\n");
-	fprintf(stdout, "\nOptions:\t--protein\tprotein input file\n"
-					"        \t--help   \tthis help output\n\n"
-		);
+	fprintf(stdout, "\nTOPLOT: TOPology pLOT\n");
+
+	fprintf(stdout, "\ntoplot [--pdb ...] [OPTIONS ...]\n"
+			"\tOPTIONS\n"
+			"\t  --pdb <PDB input>\n"
+			"\t  --help\n\n");
+
+	fprintf(stdout,	"(C) 2006-2017 Jens Kleinjung\n\n");
 }
 void parse_args(int argc, char **argv, char *pdbfilename)
 {
@@ -24,7 +26,7 @@ void parse_args(int argc, char **argv, char *pdbfilename)
 
 	static struct option long_options[] =
 	{
-		{"protein", required_argument, 0, 1},
+		{"pdb", required_argument, 0, 1},
         {"help", no_argument, 0, 11},
 		{0, 0, 0, 0}
 	};
@@ -41,7 +43,6 @@ void parse_args(int argc, char **argv, char *pdbfilename)
 		{
             case 1:
                 strcpy(pdbfilename, optarg);
-                /*fprintf(stdout, "PROTEIN set to name %s\n", pdbfilename);*/
                 break;
             case 11:
 				usage();

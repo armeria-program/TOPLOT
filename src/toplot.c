@@ -99,16 +99,14 @@ void topology(char *filename, Str *str)
 void print_angles(Str *str, FILE *angFile)
 {
 	unsigned int i;
-	float state;
-	float angle;
+	//float state;
+	//float angle;
 
-    for (i = 0; i < str->nseg; ++ i)
-	{
-		angle = str->phit[i][0];
-		state = str->phit[i][1];
+    for (i = 0; i < str->nseg; ++ i) {
+		//angle = str->phit[i][0];
+		//state = str->phit[i][1];
 
-		if (i == 0)
-		{
+		if (i == 0) {
 			/*fprintf(stderr, "seg %d, atoms %d to %d, type %d\n", 
 					i, str->seg[i][0], (str->seg[i][0] + str->seg[i][1] - 1), str->seg[i][2]);*/
 			continue;
@@ -146,6 +144,7 @@ int main(int argc, char *argv[])
     /*FILE *aaAngFile; char *aaAngFilename = "aa.ang";*/ /* angles beta/beta */
     /*FILE *abAngFile; char *abAngFilename = "ab.ang";*/ /* angles alpha/beta */
     /*FILE *bbAngFile; char *bbAngFilename = "bb.ang";*/ /* angles alpha/alpha */
+    FILE *angFile; char *angFilename = "ang.dat"; /* TOPLOT log file */
 
 	/* counters */
     unsigned int i = 0; /*unsigned int j = 0; unsigned int k = 0; unsigned int l = 0;*/
@@ -178,7 +177,7 @@ int main(int argc, char *argv[])
 	/* calculate topology */
 
 	/* angle output file */
-	angFile = safe_open(aaAngFilename, "w");
+	angFile = safe_open(angFilename, "w");
 
 	if (allatom) {
 		/* dihedral angles (PHI, PSI) */
@@ -208,14 +207,9 @@ int main(int argc, char *argv[])
 		topo_sequence(&pdb, &topseq[0]);
 
 		print_angles(&pdb, angFile);
-	}
 
-	fclose(angFile);
-
-	/*____________________________________________________________________________*/
-	/* capture errors */
-	else
-	{
+		fclose(angFile);
+	} else {
 		strcpy(&err_msg[0], "Protein backbone incomplete!");
 		error_exit(&err_msg[0]);
 	}
