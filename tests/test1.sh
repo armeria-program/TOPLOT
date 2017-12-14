@@ -3,5 +3,5 @@
 echo "--------------------------------------------------------------"
 echo "TOPLOT running on test structure"
 echo "--------------------------------------------------------------"
-../src/tplot --pdb 1f3r.pdb || exit 1
+../src/toplot --pdb 1cfd.pdb || exit 1
 

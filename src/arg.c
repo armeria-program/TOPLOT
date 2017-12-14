@@ -19,7 +19,10 @@ void usage( void )
 			"\t  --help\n\n");
 
 	fprintf(stdout,	"(C) 2006-2017 Jens Kleinjung\n\n");
+
+	exit(0);
 }
+
 void parse_args(int argc, char **argv, char *pdbfilename)
 {
 	int c;
@@ -34,7 +37,6 @@ void parse_args(int argc, char **argv, char *pdbfilename)
 	if (argc < 2)
 	{
 		usage();
-		exit(1);
 	}
 
 	while ((c = getopt_long (argc, argv, "1:11", long_options, NULL)) != -1)
@@ -46,7 +48,7 @@ void parse_args(int argc, char **argv, char *pdbfilename)
                 break;
             case 11:
 				usage();
-                exit(1);
+                exit(0);
 			default:
 				usage();
 				break;	
