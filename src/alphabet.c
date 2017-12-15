@@ -54,7 +54,7 @@ char topo_state(Str *str, int seg)
 
 /*___________________________________________________________________________*/
 /* generate topology sequence */
-void topo_sequence(Str *str, char *topseq)
+void topo_sequence(Str *str, char *topseq, char *pdbfilename)
 {
 	unsigned int seg = 0;
 	char state;
@@ -74,7 +74,7 @@ void topo_sequence(Str *str, char *topseq)
 	}
 	topseq[seg] = '\0';	
 	if (strlen(topseq) > 1)
-		fprintf(stdout, "%s\n", topseq);
+		fprintf(stdout, ">%s\n%s\n", pdbfilename, topseq);
 	else
 		fprintf(stdout, "?\n");
 }

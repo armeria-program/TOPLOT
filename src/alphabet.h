@@ -12,6 +12,6 @@
 
 /* prototypes */
 char topo_state(Str *str, int seg);
-void topo_sequence(Str *str, char *topseq);
+void topo_sequence(Str *str, char *topseq, char *pdbfilename);
 
 #endif

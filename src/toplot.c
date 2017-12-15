@@ -204,15 +204,16 @@ int main(int argc, char *argv[])
 
 		/* topology sequence */
 		topseq = safe_malloc((pdb.nseg + 1) * sizeof(char));
-		topo_sequence(&pdb, &topseq[0]);
+		topo_sequence(&pdb, &topseq[0], &(pdbfilename)[0]);
 
 		print_angles(&pdb, angFile);
-
-		fclose(angFile);
 	} else {
 		strcpy(&err_msg[0], "Protein backbone incomplete!");
 		error_exit(&err_msg[0]);
 	}
+
+	fclose(angFile);
+
     /*____________________________________________________________________________*/
 	/* free memory */
 	free(topseq);
