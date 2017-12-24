@@ -330,9 +330,11 @@ void phi_psi(Str *str, int res)
 		 str->ss[res][0] = str->ss[res-1][0] + 1;  /* or generate new element */
 	}
 
-	fprintf (stderr, "%s:%d: res = %d, phi = %f, psi = %f, type = %d, element = %d\n",
+	/*
+	fprintf (stderr, "%s:%d: res = %d, phi = %f, psi = %f, ss_element = %d, type = %d\n",
 		__FILE__, __LINE__,
-		res, str->phi[res][0], str->psi[res][0], str->ss[res][1], str->ss[res][0]);
+		res, str->phi[res][0], str->psi[res][0], str->ss[res][0], str->ss[res][1]);
+	*/
 }
 
 /*____________________________________________________________________________*/
@@ -363,8 +365,8 @@ void ss_segments(Str *str)
 	str->seg[0][0] = 0; /* start atom of segment */
 	str->seg[0][1] = 1; /* segment length */
 
-	for (i = 1; i < str->nAtom - 1; ++ i) {
-		if (str->ss[i][1] == str->ss[i-1][1]) { /* if same sec.str. element */
+	for (i = 1; i < str->sequence.length; ++ i) {
+		if (str->ss[i][0] == str->ss[i-1][0]) { /* if same sec.str. element */
 			++ str->seg[str->nseg][1]; /* extend segment */
 			str->seg[str->nseg][2] = str->ss[i][1];
 		}
@@ -384,12 +386,13 @@ void ss_segments(Str *str)
 			helices at least 5 long, sheet at least 4 long, other don't count as segment */
         else if (((str->seg[str->nseg][1] < 5) && ((str->ss[str->seg[str->nseg][0]][1] == 1) || \
                                                    (str->ss[str->seg[str->nseg][0]][1] == 2))) || \
-                ( (str->seg[str->nseg][1] < 4) &&  (str->ss[str->seg[str->nseg][0]][1] == 0)) || \
+                 ((str->seg[str->nseg][1] < 4) &&  (str->ss[str->seg[str->nseg][0]][1] == 0)) || \
 				  (str->ss[str->seg[str->nseg][0]][1] == 3))
 		{
 			str->seg[str->nseg][0] = i; /* segment starts here */
 			str->seg[str->nseg][1] = 1; /* ... and is 1 long */
-			str->seg[str->nseg][2] = -1;
+			str->seg[str->nseg][2] = -1; /* ss type unassigned */
+			str->seg[str->nseg][3] = -1; /* contact unassigned */
 		} else { /* else new segment */
 			++ str->nseg;
 
@@ -407,10 +410,6 @@ void ss_segments(Str *str)
 		}
 		str->atom[i].seg = str->nseg; /* assign segment number to this atom */
 	}
-
-	/* last atom */
-	if (str->ss[i][1] == str->ss[i - 1][1])
-		++ str->seg[str->nseg][1];
 }
 
 /*____________________________________________________________________________*/

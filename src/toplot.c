@@ -159,13 +159,13 @@ int main(int argc, char *argv[])
 
 	/* sec.str. chain segments according to PHI/PSI angles */
 	ss_segments(&pdb);
-	exit(1);
 
 	/* axis angles of sec.str. segments */
 	pdb.axis = safe_malloc(pdb.nseg * sizeof(Vec));
 	pdb.axispoint = safe_malloc(pdb.nseg * sizeof(Vec [3]));
 
 	segment_angle(&pdb);
+	exit(1);
 
 	/* contacts between segments */
 	contact(&pdb);
