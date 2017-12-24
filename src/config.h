@@ -1,6 +1,9 @@
 /* src/config.h.  Generated from config.h.in by configure.  */
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to compile with DEBUG settings. */
+#define DEBUG 1
+
 /* Define to 1 if you have the <float.h> header file. */
 #define HAVE_FLOAT_H 1
 
@@ -48,6 +51,9 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
 
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+/* #undef NO_MINUS_C_MINUS_O */
+
 /* Name of package */
 #define PACKAGE "toplot"
 
@@ -68,6 +74,9 @@
 
 /* Define to the version of this package. */
 #define PACKAGE_VERSION "1.1"
+
+/* Define to compile with PROFILING settings. */
+/* #undef PROFILING */
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1

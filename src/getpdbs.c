@@ -1,5 +1,4 @@
 /*==============================================================================
- $Id: getpdbs.c,v 1.5 2007/04/03 15:50:20 jkleinj Exp $ 
  getpdbs.c : Routines for reading PDB structures
  Copyright (C) 2004 Jens Kleinjung
  GNU GPL Licence applies
@@ -70,70 +69,118 @@ ________________________________________________________________________________
 79 - 80        LString(2)      charge        Charge on the atom.
 */
 
-void read_pdb(FILE *pdbfile, Str *str, int *allatom)
+void read_pdb(FILE *pdbInFile, Str *str)
 {
 	unsigned int i, j, l;
-	unsigned int k = 0;
 	char line[80];
-	unsigned int allocated = 64;
+	unsigned int allocated_atom = 64;
+	unsigned int allocated_residue = 64;
+    char stopline[80] = "";
+    int stopflag = 0;
 
-	/* initialise/allocate memory for set of (64) selected (CA) atom entries */
-	str->natom = 0;
-	str->atom = safe_malloc(allocated * sizeof(Atom));
+   /*____________________________________________________________________________*/
+    /* initialise/allocate memory for set of (64) selected (CA) atom entries */
+    str->nAtom = 0;
+    str->nResidue = 0;
+    str->nChain = 0;
+
+    str->atom = safe_malloc(allocated_atom * sizeof(Atom));
+
+    /* allocate memory for sequence residues */
+    str->sequence.res = safe_malloc(allocated_residue * sizeof(char));
+
+    /*____________________________________________________________________________*/
+    /* count the number of models */
+    while(fgets(line, 80, pdbInFile) != 0) {
+        if (strncmp(line, "MODEL ", 6) == 0) {
+            if (stopflag == 0) {
+                stopflag = 1;
+                continue;
+            } else {
+                strcpy(stopline, line);
+                break;
+            }
+        }
+    }
+
+    /* rewind the file handle to the start */
+    if (fseek(pdbInFile, 0L, SEEK_SET) != 0) {
+        /* handle repositioning error */
+    }
 
 	/* allocate memory for sequence residues */
-	str->sequence.res = safe_malloc(allocated * sizeof(char));
-	if (allatom) {
-		str->phi  = safe_malloc(allocated * sizeof(float [6]));
-		str->psi  = safe_malloc(allocated * sizeof(float [6]));
-		str->ss   = safe_malloc(allocated * sizeof(int [2]));
-	}
+	str->sequence.res = safe_malloc(allocated_residue * sizeof(char));
+	str->phi  = safe_malloc(allocated_residue * sizeof(float [6]));
+	str->psi  = safe_malloc(allocated_residue * sizeof(float [6]));
+	str->ss   = safe_malloc(allocated_residue * sizeof(int [2]));
 
 	/* not all PDB data types are used in this program to save resources */
-    while(fgets(line, 80, pdbfile)) { /* read line */
+    while(fgets(line, 80, pdbInFile)) { /* read line */
 
-		/* record name */
-		if(strncmp(line, "ATOM  ", 6) != 0)
-			continue;
+        /*____________________________________________________________________________*/
+        /* check conditions to start assigning this entry */
+        /* skip other models */
+        if((strcmp(line, stopline) == 0) && (stopflag == 1))
+            break;
 
+        /* read only ATOM/HETATM records */
+        if((strncmp(line, "ATOM  ", 6) != 0) && (strncmp(line, "HETATM", 6) != 0))
+            continue;
+
+        /* skip alternative locations except for location 'A' */
+        if (line[16] != 32 && line[16] != 65) {
+            /*fprintf(stderr, "Warning: Skipping atom %d in alternative location %c\n",
+                 atoi(&line[6]), line[16]);*/
+            continue;
+        }
+
+        /*____________________________________________________________________________*/
 		/* atom number */
-		str->atom[str->natom].atom_nr = atoi(&line[6]);
+		str->atom[str->nAtom].atom_nr = atoi(&line[6]);
 
 		/* atom name */
 		for (i = 12, j = 0; i < 16; )
-			str->atom[str->natom].atom_ne[j++] = line[i++];
-		str->atom[str->natom].atom_ne[j] = '\0';
+			str->atom[str->nAtom].atom_ne[j++] = line[i++];
+		str->atom[str->nAtom].atom_ne[j] = '\0';
 
 		/* decision about recording selected (CA) atoms */
-		if(strncmp(str->atom[str->natom].atom_ne, " CA ", 4) != 0)
+		if	((strncmp(str->atom[str->nAtom].atom_ne, " N  ", 4) != 0) && 
+			 (strncmp(str->atom[str->nAtom].atom_ne, " CA ", 4) != 0) &&
+			 (strncmp(str->atom[str->nAtom].atom_ne, " C  ", 3) != 0)) { 
 			continue;
+		}
+
+        /* skip alternative locations except for location 'A' */
+        if (line[16] != 32 && line[16] != 65) {
+            /*fprintf(stderr, "Warning: Skipping atom %d in alternative location %c\n",
+                 atoi(&line[6]), line[16]);*/
+            continue;
+        }
 
 		/* alternative location */
-		/*str->atom[str->natom].alt_loc[0] = line[16];	
-		str->atom[str->natom].alt_loc[1] = '\0';*/
+		/*str->atom[str->nAtom].alt_loc[0] = line[16];	
+		str->atom[str->nAtom].alt_loc[1] = '\0';*/
 
 		/* residue name */
 		for (i = 17, j = 0; i < 20; )
-			str->atom[str->natom].res_ne[j++] = line[i++];
-		str->atom[str->natom].res_ne[j] = '\0';
+			str->atom[str->nAtom].res_ne[j++] = line[i++];
+		str->atom[str->nAtom].res_ne[j] = '\0';
 
 		/* chain identifier */
-		str->atom[str->natom].chain_id[0] = line[21];
-		str->atom[str->natom].chain_id[1] = '\0';
+		str->atom[str->nAtom].chain_id[0] = line[21];
+		str->atom[str->nAtom].chain_id[1] = '\0';
 
 		/* residue number */
-		str->atom[str->natom].res_nr = atoi(&line[22]);
+		str->atom[str->nAtom].res_nr = atoi(&line[22]);
 
 		/* skip duplicate assignments, 
-		e.g. when alternative locations are specified */
+			e.g. when alternative locations are specified */
 		/* scan backwards for identical atom name in same residue */
-		for (l = 1; l < str->natom; ++ l) {
+		for (l = 1; l < str->nAtom; ++ l) {
 			/*fprintf(stderr, "l=%d res0=%d, res1=%d\n", 
-				l,  str->atom[str->natom].res_nr, str->atom[str->natom - l].res_nr);*/
-			if (str->atom[str->natom].res_nr == str->atom[str->natom - l].res_nr)
-			{
-				if (strcmp(str->atom[str->natom].atom_ne, str->atom[str->natom - l].atom_ne) == 0)
-				{
+				l,  str->atom[str->nAtom].res_nr, str->atom[str->nAtom - l].res_nr);*/
+			if (str->atom[str->nAtom].res_nr == str->atom[str->nAtom - l].res_nr) {
+				if (strcmp(str->atom[str->nAtom].atom_ne, str->atom[str->nAtom - l].atom_ne) == 0) {
 					l = -1; /* flag up duplicate assignment */
 					break;
 				}
@@ -144,191 +191,90 @@ void read_pdb(FILE *pdbfile, Str *str, int *allatom)
 			continue;
 
 		/* code for insertion of residues */
-		/*str->atom[str->natom].icode[0] = line[26];
-		str->atom[str->natom].icode[1] = '\0';*/
+		/*str->atom[str->nAtom].icode[0] = line[26];
+		str->atom[str->nAtom].icode[1] = '\0';*/
 
 		/* coordinates */
-		str->atom[str->natom].x = atof(&line[30]);
-		str->atom[str->natom].y = atof(&line[38]);
-		str->atom[str->natom].z = atof(&line[46]);
+		str->atom[str->nAtom].x = atof(&line[30]);
+		str->atom[str->nAtom].y = atof(&line[38]);
+		str->atom[str->nAtom].z = atof(&line[46]);
 
-		/*printf("x %6.4f, y %6.4f, z %6.4f\n", str->atom[str->natom].x,
-			str->atom[str->natom].y, str->atom[str->natom].z);*/
+		/*printf("x %6.4f, y %6.4f, z %6.4f\n", str->atom[str->nAtom].x,
+			str->atom[str->nAtom].y, str->atom[str->nAtom].z);*/
 
 		/* occupancy */
-		/*str->atom[str->natom].occupancy = atof(&line[54]);*/
+		/*str->atom[str->nAtom].occupancy = atof(&line[54]);*/
 
 		/* temperature factor */
-		/*str->atom[str->natom].temp_f = atof(&line[60]);*/
+		/*str->atom[str->nAtom].temp_f = atof(&line[60]);*/
 
 		/* segment identifier */
 		/*for (i = 72, j = 0; i < 76; )
-			str->atom[str->natom].seg_id[j++] = line[i++];
-		str->atom[str->natom].seg_id[j] = '\0';*/
+			str->atom[str->nAtom].seg_id[j++] = line[i++];
+		str->atom[str->nAtom].seg_id[j] = '\0';*/
 
 		/* element */
 		/*for (i = 76, j = 0; i < 78; )
-			str->atom[str->natom].element[j++] = line[i++];
-		str->atom[str->natom].element[j] = '\0';*/
+			str->atom[str->nAtom].element[j++] = line[i++];
+		str->atom[str->nAtom].element[j] = '\0';*/
 
 		/* charge */
 		/*for (i = 78, j = 0; i < 80; )
-			str->atom[str->natom].charge[j++] = line[i++];
-		str->atom[str->natom].charge[j] = '\0';*/
+			str->atom[str->nAtom].charge[j++] = line[i++];
+		str->atom[str->nAtom].charge[j] = '\0';*/
 
 		/* description: everything before coordinates */
 		for (i = 0, j = 0; i < 30; )
-			str->atom[str->natom].descrip[j++] = line[i++];
-		str->atom[str->natom].descrip[j] = '\0';
+			str->atom[str->nAtom].descrip[j++] = line[i++];
+		str->atom[str->nAtom].descrip[j] = '\0';
 
 		/* assign residue to sequence and count selected (CA) atoms */
 		/* transform to 1-letter code and store sequence */
-		str->sequence.res[k++] = aacode(str->atom[str->natom].res_ne);
+		/* PHI: C N CA C */
+		/* PSI:   N CA C N */
+		if (strncmp(str->atom[str->nAtom].atom_ne, " N  ", 4) == 0) {
+			if (str->nResidue > 0) {
+				str->phi[str->nResidue - 1][4] = str->phi[str->nResidue][1];
+			}
+			str->phi[str->nResidue][2] = str->nAtom;
+			str->psi[str->nResidue][1] = str->nAtom;
+		} else if (strncmp(str->atom[str->nAtom].atom_ne, " CA ", 4) == 0) {
+			str->phi[str->nResidue][3] = str->nAtom;
+			str->psi[str->nResidue][2] = str->nAtom;
+		} else if (strncmp(str->atom[str->nAtom].atom_ne, " C  ", 4) == 0) {
+			str->phi[str->nResidue][4] = str->nAtom;
+			str->psi[str->nResidue][3] = str->nAtom;
+			if (str->nResidue > 0) {
+				str->phi[str->nResidue][1] = str->phi[str->nResidue - 1][4];
+			}
+
+			str->sequence.res[str->nResidue] = aacode(str->atom[str->nAtom].res_ne);
+			++ str->nResidue;
+		}
+
+		/* increment residues */
+		if (str->nResidue == allocated_residue) {
+            str->sequence.res = safe_realloc(str->sequence.res, (allocated_residue += 64) * sizeof(char));
+			str->phi = safe_realloc(str->phi, allocated_residue * sizeof(float [6]));
+			str->psi = safe_realloc(str->psi, allocated_residue * sizeof(float [6]));
+			str->ss  = safe_realloc(str->ss,  allocated_residue * sizeof(int [2]));
+
+		}
 
 		/* initialise other values */
-		str->atom[str->natom].seg = 0;
+		str->atom[str->nAtom].seg = 0;
 
-		++ str->natom;
+		++ str->nAtom;
 
-		/* allocate more memory if needed */
-		if (str->natom == allocated)
+		/* increment atoms */
+		if (str->nAtom == allocated_atom)
 		{
-			allocated += 64;
-			str->atom = safe_realloc(str->atom, allocated * sizeof(Atom));
-			str->sequence.res = safe_realloc(str->sequence.res, allocated * sizeof(char));
-			if (allatom) 
-			{
-				str->phi = safe_realloc(str->phi, allocated * sizeof(float [6]));
-				str->psi = safe_realloc(str->psi, allocated * sizeof(float [6]));
-				str->ss  = safe_realloc(str->ss,  allocated * sizeof(int [2]));
-			}
+			allocated_atom += 64;
+			str->atom = safe_realloc(str->atom, allocated_atom * sizeof(Atom));
+			str->sequence.res = safe_realloc(str->sequence.res, allocated_atom * sizeof(char));
 		}
 	}
-	str->sequence.res[k] = '\0';
-	str->sequence.length = str->natom;
+	str->sequence.res[str->nResidue] = '\0';
+	str->sequence.length = str->nResidue;
 }
-
-/*____________________________________________________________________________*/
-/* read all atoms from PDB file */
-int read_all_pdb(FILE *pdbfile, Str *str, int *allatom)
-{
-	unsigned int i, j, l;
-	char line[80];
-	unsigned int allocated = 64;
-	unsigned int res = 0; /* (internal) residue number */
-	unsigned int bb_count = 0; /* count backbone atoms : completion check */
-
-	/* initialise/allocate memory for set of (64) all atom entries */
-	str->nallatom = 0;
-	str->allatom = safe_malloc(allocated * sizeof(Atom));
-
-	/* reset file pointer */
-	fseek(pdbfile, 0, 0);
-
-	/* for comments see routine above */
-    while(fgets(line, 80, pdbfile)) { /* read line */
-
-		if(strncmp(line, "ATOM  ", 6) != 0)
-			continue;
-
-		str->allatom[str->nallatom].atom_nr = atoi(&line[6]);
-
-		/* alternative location */
-		/*str->allatom[str->nallatom].alt_loc[0] = line[16];
-		str->allatom[str->nallatom].alt_loc[1] = '\0';
-		if ((line[16] != ' ') && (line[16] != 'A'))
-			continue;*/
-
-		for (i = 12, j = 0; i < 16; )
-			str->allatom[str->nallatom].atom_ne[j++] = line[i++];
-		str->allatom[str->nallatom].atom_ne[j] = '\0';
-
-		for (i = 17, j = 0; i < 20; )
-			str->allatom[str->nallatom].res_ne[j++] = line[i++];
-		str->allatom[str->nallatom].res_ne[j] = '\0';
-
-		str->allatom[str->nallatom].chain_id[0] = line[21];
-		str->allatom[str->nallatom].chain_id[1] = '\0';
-
-		str->allatom[str->nallatom].res_nr = atoi(&line[22]);
-
-		/* skip duplicate assignments, 
-		e.g. when alternative locations are specified */
-		/* scan backwards for identical atom name in same residue */
-		for (l = 1; l <= str->nallatom; ++ l)
-		{
-			/*fprintf(stderr, "l=%d allres0=%d, allres1=%d\n", 
-				l,  str->allatom[str->nallatom].res_nr, str->allatom[str->nallatom - l].res_nr);*/
-			if (str->allatom[str->nallatom].res_nr == str->allatom[str->nallatom - l].res_nr)
-			{
-				if (strcmp(str->allatom[str->nallatom].atom_ne, str->allatom[str->nallatom - l].atom_ne) == 0)
-				{
-					l = -1; /* flag up duplicate assignment */
-					break;
-				}
-			}
-		}
-
-		if (l == -1) /* skip duplicate assignment */
-			continue;
-
-		str->allatom[str->nallatom].x = atof(&line[30]);
-		str->allatom[str->nallatom].y = atof(&line[38]);
-		str->allatom[str->nallatom].z = atof(&line[46]);
-
-		for (i = 0, j = 0; i < 30; )
-			str->allatom[str->nallatom].descrip[j++] = line[i++];
-		str->allatom[str->nallatom].descrip[j] = '\0';
-
-		/* recording atom numbers of atoms constituting PHI/PSI angles */
-		/* N */
-		if(strncmp(str->allatom[str->nallatom].atom_ne, " N  ", 4) == 0)
-		{
-			str->phi[res][2] = (float)str->nallatom;
-			str->psi[res][1] = (float)str->nallatom;
-			if (res > 0) 
-				str->psi[res - 1][4] = (float)str->nallatom;
-			++ bb_count;
-		}
-		/* CA */
-		if(strncmp(str->allatom[str->nallatom].atom_ne, " CA ", 4) == 0)
-		{
-            str->phi[res][3] = (float)str->nallatom;
-            str->psi[res][2] = (float)str->nallatom;
-			/* preset dihedral angles */
-			str->phi[res][0] = 999.;
-			str->psi[res][0] = 999.;
-			++ bb_count;
-		}
-		/* C */
-		if(strncmp(str->allatom[str->nallatom].atom_ne, " C  ", 4) == 0)
-		{
-            str->phi[res][4] = (float)str->nallatom;
-            str->psi[res][3] = (float)str->nallatom;
-			if (res < str->natom - 1)
-				str->phi[res + 1][1] = (float)str->nallatom;
-			++ bb_count;
-			/* check for backbone completeness */
-			if ((bb_count % 3) == 0)
-				++res;
-			else
-				return 0; /* resturn allatom = 0 */
-		}
-
-		++ str->nallatom;
-
-		if (str->nallatom == allocated)
-		{
-			allocated += 64;
-			str->allatom = safe_realloc(str->allatom, allocated * sizeof(Atom));
-		}
-
-	}
-
-	/*if (allatom)
-		fprintf(stdout, "\tall atom number = %5d\n", str->nallatom);*/
-
-	return 1; /* return allatom = 1 */
-}
-
 

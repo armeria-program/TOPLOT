@@ -1,6 +1,4 @@
 /*===============================================================================
- $Id: toplot.h,v 1.2 2006/10/22 22:52:37 jkleinj Exp $
- TOPLOT: TOPology pLOT
  toplot.h : Main routine
  Copyright (C) 2006  Jens Kleinjung
  GNU GPL License applies

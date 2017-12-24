@@ -1,5 +1,4 @@
 /*==============================================================================
- $Id: alphabet.c,v 1.13 2007/04/03 15:50:20 jkleinj Exp $ 
  alphabet.c : topology alphabet
  Copyright (C) 2006 Jens Kleinjung
  GNU GPL License applies

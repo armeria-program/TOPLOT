@@ -1,5 +1,4 @@
 /*==============================================================================
- $Id: contact.c,v 1.5 2006/11/07 15:35:12 jkleinj Exp $ 
  contact.c : Contacts between sec.str. segments
  Copyright (C) 2006 Jens Kleinjung
  GNU GPL License applies

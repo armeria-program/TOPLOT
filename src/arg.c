@@ -1,7 +1,7 @@
 /*==============================================================================
-$Id: parse_args.c,v 1.3 2006/10/25 23:28:42 jkleinj Exp $
 arg.c : parse command line arguments
-(C) 2006 Alsseandro Pandini and Jens Kleinjung
+Copyright (C) 2006-2017 Jens Kleinjung
+Copyright (C) 2006 Alessandro Pandini
 ==============================================================================*/
 
 #include <getopt.h>

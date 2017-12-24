@@ -1,5 +1,4 @@
 /*===============================================================================
- $Id: structure.h,v 1.8 2006/11/07 15:35:12 jkleinj Exp $
  structure.h : Routines for structure operations
  Copyright (C) 2004 Jens Kleinjung
  GNU GPL License applies
@@ -65,20 +64,25 @@ typedef struct
 typedef struct
 {
 	Atom *atom; /* array of selected (CA) atoms constituting structure */
-	int natom; /* number of selected (CA) atoms */
-	Atom *allatom; /* array of all atoms constituting structure */
-	int nallatom; /* number of all selected (CA) atoms */
+	int nAtom; /* number of selected (CA) atoms */
+	int nResidue; /* number of selected (CA) atoms */
+	int nChain; /* number of chains */
+
 	Seq sequence; /* sequence of structure */
-	float (*phi)[6]; /* array of backbone angles PHI: angle, 4 atom numbers, sec.str. */
-	float (*psi)[6]; /* array of backbone angles PSI: angle, 4 atom numbers, sec.str. */
-	int (*ss)[2]; /* array of sec.str. elements: 0: element number, 1: type of sec.str. per residue */
+	float (*phi)[6]; /* array of backbone angles PHI:
+						0: angle, 2-5: 4 atom numbers, 6: sec.str. */
+	float (*psi)[6]; /* array of backbone angles PSI:
+						0: angle, 2-5: 4 atom numbers, 6: sec.str. */
+	int (*ss)[2]; /* array of sec.str. elements: 0:
+						0: element number, 1: type of sec.str. per residue */
 	int (*seg)[4]; /* array of sec.str. segment lengths; 
-					0: start atom, 1: length, 2: sec.str. type, 3: contact */
+						0: start atom, 1: length, 2: sec.str. type, 3: contact */
 	float (*phit)[2]; /* array of segment angles PHIt: 0: angle, 1: topology */
-	/*float (*psit)[2];*/ /* array of segment angles PSIt: angle, topology */
+	float (*psit)[2]; /* array of segment angles PSIt: 0: angle, 1: topology */
 	int nseg; /* number of sec.str. segments */
 	Vec *axis; /* vector for segment axis definition */
-	Vec (*axispoint)[3]; /* vector for points on axis: 0: N-terminus, 1: C-terminus, 2: midpoint */
+	Vec (*axispoint)[3]; /* vector for points on axis:
+						0: N-terminus, 1: C-terminus, 2: midpoint */
 } Str;
 
 /* prototypes */

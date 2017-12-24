@@ -1,7 +1,4 @@
 /*=============================================================================
- $Id: toplot.c,v 1.18 2007/04/03 15:50:20 jkleinj Exp $
- $Name:  $
-
  TOPLOT: TOPology pLOT
  ~~~~~~~~~~~~~~~~~~~~~
  Program for topology plotting and analysis
@@ -73,7 +70,7 @@ void ramachandran(char *filename, Str *str)
 
 	file = safe_open(filename, "w");
 
-    for (i = 0; i < str->natom; ++ i)
+    for (i = 0; i < str->nAtom; ++ i)
         fprintf(file, "%f\t%f\n", str->phi[i][0], str->psi[i][0]);
 
 	fclose(file);
@@ -116,21 +113,17 @@ void print_angles(Str *str, FILE *angFile)
 
 /* free memory of structure */
 /*____________________________________________________________________________*/
-void free_pdb(Str *str, int allatom)
+void free_pdb(Str *str)
 {
 	free(str->atom);
 	free(str->sequence.res);
-	if (allatom)
-	{
-		free(str->allatom);
-		free(str->phi);
-		free(str->psi);
-		free(str->ss);
-		free(str->seg);
-		free(str->phit);
-		free(str->axis);
-		free(str->axispoint);
-	}
+	free(str->phi);
+	free(str->psi);
+	free(str->ss);
+	free(str->seg);
+	free(str->phit);
+	free(str->axis);
+	free(str->axispoint);
 }
 
 /*____________________________________________________________________________*/
@@ -138,22 +131,13 @@ int main(int argc, char *argv[])
 {
 	/* files */
     FILE *pdbfile; char *pdbfilename;
-	/*char *ramafilename = "rama.dat";*/ /* output of Ramachandran plot data*/
-	/*char *topofilename = "topo.dat";*/ /* output of topology plot data*/
-    /*FILE *outfile; char *outfilename = "toplot.log";*/ /* TOPLOT log file */
-    /*FILE *aaAngFile; char *aaAngFilename = "aa.ang";*/ /* angles beta/beta */
-    /*FILE *abAngFile; char *abAngFilename = "ab.ang";*/ /* angles alpha/beta */
-    /*FILE *bbAngFile; char *bbAngFilename = "bb.ang";*/ /* angles alpha/alpha */
-    FILE *angFile; char *angFilename = "ang.dat"; /* TOPLOT log file */
+    /*FILE *angFile; char *angFilename = "ang.dat";*/
 
 	/* counters */
-    unsigned int i = 0; /*unsigned int j = 0; unsigned int k = 0; unsigned int l = 0;*/
-
-	int allatom = ALLATOM;
+    unsigned int i = 0;
 
 	Str pdb; /* protein structure data structure */
 	char *topseq = 0; /* topology sequence */
-	char err_msg[100];
 
 	/*____________________________________________________________________________*/
 	/* parse command line arguments */
@@ -163,61 +147,45 @@ int main(int argc, char *argv[])
 	/*____________________________________________________________________________*/
 	/* read PDB file */
 	pdbfile = safe_open(pdbfilename, "r");
-	read_pdb(pdbfile, &pdb, &allatom); /* read Calpha atoms */
-
-	if (allatom) { /* read_pdb : allatom = 0 if incomplete backbone */
-		allatom = read_all_pdb(pdbfile, &pdb, &allatom); /* read all atom structure */
-	} else {
-		strcpy(&err_msg[0], "Protein backbone incomplete!");
-		error_exit(&err_msg[0]);
-	}
+	read_pdb(pdbfile, &pdb);
 	fclose(pdbfile);
 
 	/*____________________________________________________________________________*/
 	/* calculate topology */
+	/* dihedral angles (PHI, PSI) */
+	for (i = 0; i < pdb.sequence.length; ++ i) {
+		phi_psi(&pdb, i);
+	}
+	exit(1);
+
+	/* sec.str. chain segments according to PHI/PSI angles */
+	ss_segments(&pdb);
+
+	/* axis angles of sec.str. segments */
+	pdb.axis = safe_malloc(pdb.nseg * sizeof(Vec));
+	pdb.axispoint = safe_malloc(pdb.nseg * sizeof(Vec [3]));
+
+	segment_angle(&pdb);
+
+	/* contacts between segments */
+	contact(&pdb);
+
+	/* topology sequence */
+	topseq = safe_malloc((pdb.nseg + 1) * sizeof(char));
+	topo_sequence(&pdb, &topseq[0], &(pdbfilename)[0]);
+
 
 	/* angle output file */
+	/*
 	angFile = safe_open(angFilename, "w");
-
-	if (allatom) {
-		/* dihedral angles (PHI, PSI) */
-		for (i = 0; i < pdb.sequence.length; ++ i)
-			phi_psi(&pdb, i);
-
-		/* Ramachandran plot */
-		/*ramachandran(ramafilename, &pdb);*/
-
-		/* sec.str. chain segments according to PHI/PSI angles */
-		ss_segments(&pdb);
-
-		/* axis angles of sec.str. segments */
-		pdb.axis = safe_malloc(pdb.nseg * sizeof(Vec));
-		pdb.axispoint = safe_malloc(pdb.nseg * sizeof(Vec [3]));
-
-		segment_angle(&pdb);
-
-		/* topology plot */
-		/*topology(topofilename, &pdb);*/
-
-		/* contacts between segments */
-		contact(&pdb);
-
-		/* topology sequence */
-		topseq = safe_malloc((pdb.nseg + 1) * sizeof(char));
-		topo_sequence(&pdb, &topseq[0], &(pdbfilename)[0]);
-
-		print_angles(&pdb, angFile);
-	} else {
-		strcpy(&err_msg[0], "Protein backbone incomplete!");
-		error_exit(&err_msg[0]);
-	}
-
+	print_angles(&pdb, angFile);
 	fclose(angFile);
+	*/
 
     /*____________________________________________________________________________*/
 	/* free memory */
 	free(topseq);
-	free_pdb(&pdb, allatom);
+	free_pdb(&pdb);
 	free(pdbfilename);
 
 	return 0;
