@@ -330,7 +330,8 @@ void phi_psi(Str *str, int res)
 		 str->ss[res][0] = str->ss[res-1][0] + 1;  /* or generate new element */
 	}
 
-	fprintf (stdout, "res = %d, phi = %f, psi = %f, type = %d, element = %d\n", 
+	fprintf (stderr, "%s:%d: res = %d, phi = %f, psi = %f, type = %d, element = %d\n",
+		__FILE__, __LINE__,
 		res, str->phi[res][0], str->psi[res][0], str->ss[res][1], str->ss[res][0]);
 }
 

@@ -234,7 +234,7 @@ void read_pdb(FILE *pdbInFile, Str *str)
 		/* PSI:   N CA C N */
 		if (strncmp(str->atom[str->nAtom].atom_ne, " N  ", 4) == 0) {
 			if (str->nResidue > 0) {
-				str->phi[str->nResidue - 1][4] = str->phi[str->nResidue][1];
+				str->psi[str->nResidue - 1][4] = str->psi[str->nResidue][1];
 			}
 			str->phi[str->nResidue][2] = str->nAtom;
 			str->psi[str->nResidue][1] = str->nAtom;
