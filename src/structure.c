@@ -293,7 +293,7 @@ void phi_psi(Str *str, int res)
 	}
 
 	/* PSI */
-	if (res < str->nAtom - 1) {
+	if (res < (str->nResidue - 1)) {
 		str->psi[res][0] = calc_diheder_atom(str, (int)str->psi[res][1], \
 													(int)str->psi[res][2], \
 													(int)str->psi[res][3], \
@@ -304,30 +304,44 @@ void phi_psi(Str *str, int res)
 	/* beware of logic! : a central range has '&&', a boundary range has '||' */
     /* sec.str. definitions taken from: Kleywegt and Jones (1996) Current Biology 4, 1395-1400 (95% Ramachandran lines) */
 	/* sheet, type 0 */
-    if ((str->phi[res][0] >= -180 && str->phi[res][0] <= -60) && \
-		(str->psi[res][0] >=  60  && str->psi[res][0] <= 180)) {
-        str->ss[res][1] = 0; /* sec.str. type of this element */
-    /* right-handed helix, type 1 */
-    } else if ((str->phi[res][0] >= -120 && str->phi[res][0] <= -30) && \
-			 (str->psi[res][0] >=  -75 && str->psi[res][0] <=  30)) {
-        str->ss[res][1] = 1;
-    /* left-handed helix, type 2 */
-    } else if ((str->phi[res][0] >=  30 && str->phi[res][0] <= 80) && \
-			 (str->psi[res][0] >= -25 && str->psi[res][0] <= 70)) {
-        str->ss[res][1] = 2;
-    /* anything else (= coil), type 3 */
-    } else {
-        str->ss[res][1] = 3;
+	/* We limit the assignment to residues between (including) 1 and res-1,
+		because PHI is not defined for residue 0 and PSI not for res-1. */
+	if ((res > 0) && (res < (str->nResidue - 1))) {
+		if ((str->phi[res][0] >= -180 && str->phi[res][0] <= -60) && \
+			(str->psi[res][0] >=  60  && str->psi[res][0] <= 180)) {
+			str->ss[res][1] = 0; /* sec.str. type of this element */
+		/* right-handed helix, type 1 */
+		} else if ((str->phi[res][0] >= -120 && str->phi[res][0] <= -30) && \
+				 (str->psi[res][0] >=  -75 && str->psi[res][0] <=  30)) {
+			str->ss[res][1] = 1;
+		/* left-handed helix, type 2 */
+		} else if ((str->phi[res][0] >=  30 && str->phi[res][0] <= 80) && \
+				 (str->psi[res][0] >= -25 && str->psi[res][0] <= 70)) {
+			str->ss[res][1] = 2;
+		/* anything else (= coil), type 3 */
+		} else {
+			str->ss[res][1] = 3;
+		}
 	}
 
 	/* sec.str. elements : these are not! the sec.str. type numbers but */
 	/*   numbered elements of contiguous sec.str. types */
-	if (res == 0) {
-		str->ss[res][0] = 0; /* start with element number 0 at residues 0 */
-	} else if (str->ss[res][1] == str->ss[res-1][1]) {
-		str->ss[res][0] =  str->ss[res-1][0]; /* continue element if sec.str. types equal */
-	} else if (str->ss[res][1] != str->ss[res-1][1]) {
-		 str->ss[res][0] = str->ss[res-1][0] + 1;  /* or generate new element */
+	/* We limit the assignment to residues between (including) 1 and res-1,
+		because secondary structures are not defined for the terminal residues. */
+	if (res == 1) {
+		str->ss[res][0] = 0; /* start with element number 0 at residue 1 */
+		str->ss[res][1] = 3; /* initalise as ss type 'other' */
+	} else if ((res > 1) && (res < (str->nResidue - 1))) {
+		if (str->ss[res][1] == str->ss[res - 1][1]) {
+			/* continue element if sec.str. types equal */
+			str->ss[res][0] = str->ss[res - 1][0];
+		} else {
+			/* or generate new element */
+			str->ss[res][0] = str->ss[res - 1][0] + 1; 
+		}
+	} else {
+		str->ss[res][0] = -1; /* NA */
+		str->ss[res][1] = -1; /* NA */
 	}
 
 	/*

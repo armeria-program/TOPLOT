@@ -233,26 +233,26 @@ void read_pdb(FILE *pdbInFile, Str *str)
 		/* PHI: C N CA C */
 		/* PSI:   N CA C N */
 		if (strncmp(str->atom[str->nAtom].atom_ne, " N  ", 4) == 0) {
+			str->phi[str->nResidue][2] = str->nAtom;
+			str->psi[str->nResidue][1] = str->nAtom;
 			if (str->nResidue > 0) {
 				str->psi[str->nResidue - 1][4] = str->psi[str->nResidue][1];
 			}
-			str->phi[str->nResidue][2] = str->nAtom;
-			str->psi[str->nResidue][1] = str->nAtom;
 		} else if (strncmp(str->atom[str->nAtom].atom_ne, " CA ", 4) == 0) {
 			str->phi[str->nResidue][3] = str->nAtom;
 			str->psi[str->nResidue][2] = str->nAtom;
 		} else if (strncmp(str->atom[str->nAtom].atom_ne, " C  ", 4) == 0) {
 			str->phi[str->nResidue][4] = str->nAtom;
-			str->psi[str->nResidue][3] = str->nAtom;
 			if (str->nResidue > 0) {
 				str->phi[str->nResidue][1] = str->phi[str->nResidue - 1][4];
 			}
+			str->psi[str->nResidue][3] = str->nAtom;
 
+			/* increment residues */
 			str->sequence.res[str->nResidue] = aacode(str->atom[str->nAtom].res_ne);
 			++ str->nResidue;
 		}
 
-		/* increment residues */
 		if (str->nResidue == allocated_residue) {
             str->sequence.res = safe_realloc(str->sequence.res, (allocated_residue += 64) * sizeof(char));
 			str->phi = safe_realloc(str->phi, allocated_residue * sizeof(float [6]));

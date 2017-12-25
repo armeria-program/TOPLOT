@@ -156,6 +156,7 @@ int main(int argc, char *argv[])
 	for (i = 0; i < pdb.sequence.length; ++ i) {
 		phi_psi(&pdb, i);
 	}
+	exit(1);
 
 	/* sec.str. chain segments according to PHI/PSI angles */
 	ss_segments(&pdb);
@@ -165,7 +166,6 @@ int main(int argc, char *argv[])
 	pdb.axispoint = safe_malloc(pdb.nseg * sizeof(Vec [3]));
 
 	segment_angle(&pdb);
-	exit(1);
 
 	/* contacts between segments */
 	contact(&pdb);
