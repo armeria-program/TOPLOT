@@ -36,15 +36,12 @@ void contact(Str *str)
 	Atom atom0, atom1;
 	int ss0, ss1;
 
-	for (i = 1; i < str->nseg; ++ i)
-	{
+	for (i = 1; i < str->nseg; ++ i) {
 		contCount = 0;
-		for (j = str->seg[i][0]; j < (str->seg[i][0] + str->seg[i][1]); ++ j)
-		{	
+		for (j = str->seg[i][0]; j < (str->seg[i][0] + str->seg[i][1]); ++ j) {	
 			atom0 = str->atom[j];
 			ss0 = str->seg[i][2];
-			for (k = str->seg[i - 1][0]; k < (str->seg[i - 1][0] + str->seg[i - 1][1]); ++ k)
-			{
+			for (k = str->seg[i - 1][0]; k < (str->seg[i - 1][0] + str->seg[i - 1][1]); ++ k) {
 				if (j < k + 3) /* minimal sequence distance required */
 					continue;
 				atom1 = str->atom[k];
@@ -75,6 +72,7 @@ void contact(Str *str)
 		else
 			str->seg[i][3] = 0;
 	
-		/*fprintf(stderr, "seg %d, contCount %d\n", i, contCount);*/
+		fprintf(stderr, "%s:%d: seg %d, contCount %d\n",
+				__FILE__, __LINE__, i, contCount);
 	}
 }

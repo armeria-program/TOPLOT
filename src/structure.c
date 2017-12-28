@@ -344,9 +344,18 @@ void phi_psi(Str *str, int res)
 		str->ss[res][1] = -1; /* NA */
 	}
 
-	fprintf (stderr, "%s:%d: res = %d, phi = %f, psi = %f, ss_element = %d, type = %d\n",
-		__FILE__, __LINE__,
-		res, str->phi[res][0], str->psi[res][0], str->ss[res][0], str->ss[res][1]);
+	if (res == 0) {
+		fprintf (stderr, "%s:%d: res %d, psi %f, ss_element %d, type %d\n",
+			__FILE__, __LINE__, res, str->psi[res][0], str->ss[res][0], str->ss[res][1]);
+	} else if (res >= (str->nResidue - 1)) {
+		fprintf (stderr, "%s:%d: res %d, phi %f, ss_element %d, type %d\n",
+			__FILE__, __LINE__, res, str->phi[res][0], str->ss[res][0], str->ss[res][1]);
+	} else {
+		fprintf (stderr, "%s:%d: res %d, phi %f, psi %f, ss_element %d, type %d\n",
+			__FILE__, __LINE__,
+			res, str->phi[res][0], str->psi[res][0], str->ss[res][0], str->ss[res][1]);
+
+	}
 }
 
 /*____________________________________________________________________________*/
@@ -640,13 +649,10 @@ void segment_angle(Str *str)
 			d23 = diff_vec(&(str->axispoint[seg][2]), &(str->axispoint[seg - 1][2]));
 			d34 = diff_vec(&(str->axispoint[seg][2]), &(str->axispoint[seg][1]));
 
-			/*fprintf(stderr, "%s:%d: seg %d, d23 %f, d34 %f\n",
-							__FILE__, __LINE__, seg, d23.x, d34.x);
-			*/
+			fprintf(stderr, "%s:%d: axes distance vectors; d12 %f, d23 %f, d34 %f\n",
+							__FILE__, __LINE__, d12.x, d23.x, d34.x);
 
-			/*fprintf(stderr, "%s:%d: d12 %f, d23 %f, d34 %f\n",
-							__FILE__, __LINE__, d12.x, d23.x, d34.x);*/
-			/*str->phit[seg][0] = abs(calc_diheder_vector(&d12, &d23, &d34));*/
+			str->phit[seg][0] = abs(calc_diheder_vector(&d12, &d23, &d34));
 		}
 	}
 }

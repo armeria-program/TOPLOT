@@ -44,7 +44,8 @@ char topo_state(Str *str, int seg)
 	if (str->seg[seg][3] == 0)
 		state += 32; /* convert to lower case */
 
-	/*fprintf(stderr, "ss1 %d, ss2 %d state %d\n", ss1, ss2, state);*/
+	/*fprintf(stderr, "%s:%d: ss1 %d, ss2 %d state %d\n",
+				__FILE__, __LINE__, ss1, ss2, state);*/
 
 	assert((state >= 65) && (state <= 122));
 
@@ -53,10 +54,12 @@ char topo_state(Str *str, int seg)
 
 /*___________________________________________________________________________*/
 /* generate topology sequence */
-void topo_sequence(Str *str, char *topseq, char *pdbfilename)
+void topo_sequence(Str *str, char *topseq, char *pdbFileName)
 {
 	unsigned int seg = 0;
 	char state;
+	char outFileName[256];
+	FILE *outFile;
 
 	if (str->nseg >= 2)
 	{
@@ -72,8 +75,13 @@ void topo_sequence(Str *str, char *topseq, char *pdbfilename)
 		}
 	}
 	topseq[seg] = '\0';	
+
+	sprintf(&(outFileName[0]), "%s%s", pdbFileName, ".fastt"); 
+	outFile = safe_open(outFileName, "w");
 	if (strlen(topseq) > 1)
-		fprintf(stdout, ">%s\n%s\n", pdbfilename, topseq);
+		fprintf(outFile, ">%s\n%s\n", pdbFileName, topseq);
 	else
-		fprintf(stdout, "?\n");
+		fprintf(stderr, "Topology file of PDB structure %s is void!\n",
+					pdbFileName);
+	fclose(outFile);
 }

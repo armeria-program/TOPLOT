@@ -23,7 +23,8 @@ void usage( void )
 	exit(0);
 }
 
-void parse_args(int argc, char **argv, char *pdbfilename)
+/*____________________________________________________________________________*/
+void parse_args(int argc, char **argv, char *pdbFileName)
 {
 	int c;
 
@@ -44,7 +45,7 @@ void parse_args(int argc, char **argv, char *pdbfilename)
 		switch(c)
 		{
             case 1:
-                strcpy(pdbfilename, optarg);
+                strcpy(pdbFileName, optarg);
                 break;
             case 11:
 				usage();
