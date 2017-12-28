@@ -109,21 +109,6 @@ void print_angles(Str *str, FILE *angFile)
 	}
 }
 
-/* free memory of structure */
-/*____________________________________________________________________________*/
-void free_pdb(Str *str)
-{
-	free(str->atom);
-	free(str->sequence.res);
-	free(str->phi);
-	free(str->psi);
-	free(str->ss);
-	free(str->seg);
-	free(str->phit);
-	free(str->axis);
-	free(str->axispoint);
-}
-
 /*____________________________________________________________________________*/
 int main(int argc, char *argv[])
 {
@@ -180,9 +165,17 @@ int main(int argc, char *argv[])
 
     /*____________________________________________________________________________*/
 	/* free memory */
-	free(topseq);
-	free_pdb(&pdb);
+	free(pdb.sequence.res);
+	free(pdb.atom);
+	free(pdb.phi);
+	free(pdb.psi);
+	free(pdb.ss);
+	free(pdb.seg);
+	free(pdb.phit);
+	free(pdb.axis);
+	free(pdb.axispoint);
 	free(pdbFileName);
+	free(topseq);
 
 	return 0;
 }

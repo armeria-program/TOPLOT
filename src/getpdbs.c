@@ -86,9 +86,6 @@ void read_pdb(FILE *pdbInFile, Str *str)
 
     str->atom = safe_malloc(allocated_atom * sizeof(Atom));
 
-    /* allocate memory for sequence residues */
-    str->sequence.res = safe_malloc(allocated_residue * sizeof(char));
-
     /*____________________________________________________________________________*/
     /* count the number of models */
     while(fgets(line, 80, pdbInFile) != 0) {
@@ -253,12 +250,11 @@ void read_pdb(FILE *pdbInFile, Str *str)
 			++ str->nResidue;
 		}
 
-		if (str->nResidue == allocated_residue) {
+		if (str->nResidue == (allocated_residue - 1)) {
             str->sequence.res = safe_realloc(str->sequence.res, (allocated_residue += 64) * sizeof(char));
 			str->phi = safe_realloc(str->phi, allocated_residue * sizeof(float [6]));
 			str->psi = safe_realloc(str->psi, allocated_residue * sizeof(float [6]));
 			str->ss  = safe_realloc(str->ss,  allocated_residue * sizeof(int [2]));
-
 		}
 
 		/* initialise other values */
@@ -271,7 +267,6 @@ void read_pdb(FILE *pdbInFile, Str *str)
 		{
 			allocated_atom += 64;
 			str->atom = safe_realloc(str->atom, allocated_atom * sizeof(Atom));
-			str->sequence.res = safe_realloc(str->sequence.res, allocated_atom * sizeof(char));
 		}
 	}
 	str->sequence.res[str->nResidue] = '\0';

@@ -379,7 +379,7 @@ void ss_segments(Str *str)
 	str->nseg = 0;
     str->seg = safe_malloc(allocated * sizeof(int [4]));
     str->phit = safe_malloc(allocated * sizeof(float [2]));
-    str->psit = safe_malloc(allocated * sizeof(float [2]));
+    /*str->psit = safe_malloc(allocated * sizeof(float [2]));*/
 
 	/* 'seg' is function of segment number */
 	/* first atom (number 0) */
