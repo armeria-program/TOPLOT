@@ -344,11 +344,9 @@ void phi_psi(Str *str, int res)
 		str->ss[res][1] = -1; /* NA */
 	}
 
-	/*
 	fprintf (stderr, "%s:%d: res = %d, phi = %f, psi = %f, ss_element = %d, type = %d\n",
 		__FILE__, __LINE__,
 		res, str->phi[res][0], str->psi[res][0], str->ss[res][0], str->ss[res][1]);
-	*/
 }
 
 /*____________________________________________________________________________*/
@@ -376,31 +374,25 @@ void ss_segments(Str *str)
 
 	/* 'seg' is function of segment number */
 	/* first atom (number 0) */
-	str->seg[0][0] = 0; /* start atom of segment */
-	str->seg[0][1] = 1; /* segment length */
+	str->seg[str->nseg][0] = 0; /* start atom of segment */
+	str->seg[str->nseg][1] = 1; /* segment length */
+	str->seg[str->nseg][2] = -1; /* ss type unassigned */
+	str->seg[str->nseg][3] = -1; /* contact unassigned */
 
 	for (i = 1; i < str->sequence.length; ++ i) {
 		if (str->ss[i][0] == str->ss[i-1][0]) { /* if same sec.str. element */
 			++ str->seg[str->nseg][1]; /* extend segment */
 			str->seg[str->nseg][2] = str->ss[i][1];
 		}
-		/* Version 1 of segment assignment */
-		 /* if only one outlier residue but at least two matching residues and
-			axis angles < 45 degrees: extend segment */
-		/*else if ((str->ss[i-1][1] == str->ss[i+1][1]) && \
-				 (str->ss[i-1][1] == str->ss[i+2][1]) && \
-				 (seg_ang(, ss+1) < 45))
-		{
-			skip = 1;
-			++ str->seg[str->nseg][1];
-
-		}*/
-		/* Version 2 of segment assignment:
-			if too short : don't assign segment;
-			helices at least 5 long, sheet at least 4 long, other don't count as segment */
-        else if (((str->seg[str->nseg][1] < 5) && ((str->ss[str->seg[str->nseg][0]][1] == 1) || \
-                                                   (str->ss[str->seg[str->nseg][0]][1] == 2))) || \
-                 ((str->seg[str->nseg][1] < 4) &&  (str->ss[str->seg[str->nseg][0]][1] == 0)) || \
+		/* segment assignment:
+			if too short : don't assign segment; helices at least 5 long,
+				sheet at least 4 long, 'others' don't count as segment */
+        else if (((str->seg[str->nseg][1] < 5) &&
+				 ((str->ss[str->seg[str->nseg][0]][1] == 1) ||
+				  (str->ss[str->seg[str->nseg][0]][1] == 2))) ||
+                 ((str->seg[str->nseg][1] < 4) &&
+				  (str->ss[str->seg[str->nseg][0]][1] == 0)) ||
+				  (str->ss[str->seg[str->nseg][0]][1] == -1) ||
 				  (str->ss[str->seg[str->nseg][0]][1] == 3))
 		{
 			str->seg[str->nseg][0] = i; /* segment starts here */
@@ -421,8 +413,24 @@ void ss_segments(Str *str)
 
 			str->seg[str->nseg][0] = i; /* start atom of new segment */
 			str->seg[str->nseg][1] = 1; /* initialise segment length */
+			str->seg[str->nseg][2] = -1; /* ss type unassigned */
+			str->seg[str->nseg][3] = -1; /* contact unassigned */
 		}
 		str->atom[i].seg = str->nseg; /* assign segment number to this atom */
+
+		fprintf (stderr, "%s:%d: res = %d, seg = %d, seg_start = %d, seg_length = %d\n",
+					__FILE__, __LINE__,
+					i, str->nseg, str->seg[str->nseg][0], str->seg[str->nseg][1]);
+	}
+	/* check last segment */
+    if (((str->seg[str->nseg][1] < 5) &&
+		((str->ss[str->seg[str->nseg][0]][1] == 1) ||
+         (str->ss[str->seg[str->nseg][0]][1] == 2))) ||
+        ((str->seg[str->nseg][1] < 4) &&
+		 (str->ss[str->seg[str->nseg][0]][1] == 0)) ||
+		 (str->ss[str->seg[str->nseg][0]][1] == 3))
+	{
+		-- str->nseg;
 	}
 }
 
@@ -463,9 +471,9 @@ void helix_axis(Str *str, int seg)
 	for (i = 1; i < str->seg[seg][1] - 1; ++ i)
 	{
 		/* vectors to the three angle-constituting atoms */
-		atom_to_vec(&tmpa1, &str->atom[str->seg[seg][0] + i - 1]);
-		atom_to_vec(&tmpa2, &str->atom[str->seg[seg][0] + i]);
-		atom_to_vec(&tmpa3, &str->atom[str->seg[seg][0] + i + 1]);
+		atom_to_vec(&tmpa1, &(str->atom[str->seg[seg][0] + i - 1]));
+		atom_to_vec(&tmpa2, &(str->atom[str->seg[seg][0] + i]));
+		atom_to_vec(&tmpa3, &(str->atom[str->seg[seg][0] + i + 1]));
 		/* two vectors constituting the angle arms */
 		dtmpa1 = diff_vec(&tmpa1, &tmpa2);
 		dtmpa2 = diff_vec(&tmpa3, &tmpa2);
@@ -488,18 +496,18 @@ void helix_axis(Str *str, int seg)
 	for (i = 1; i < str->seg[seg][1] - 2; ++ i)
 	{
 		/* helix axis direction 'H' */
-		subAxis[i] = vec_cro_pro(&axisNormal[i], &axisNormal[i+1]);
+		subAxis[i] = vec_cro_pro(&(axisNormal[i]), &(axisNormal[i+1]));
 
 		/* Calpha distance projected onto helix axis */
 		/* the two central alpha atoms of V1 and V2 */
 		/* their position vectors */
-		atom_to_vec(&tmpb2, &str->atom[str->seg[seg][0] + i]);
-		atom_to_vec(&tmpb3, &str->atom[str->seg[seg][0] + i + 1]);
+		atom_to_vec(&tmpb2, &(str->atom[str->seg[seg][0] + i]));
+		atom_to_vec(&tmpb3, &(str->atom[str->seg[seg][0] + i + 1]));
 		/* the difference vector between them */
 		dtmpb3 = diff_vec(&tmpb3, &tmpb2);
 		/* their distance when projected onto the helix axis */
 		/* d = (P2 - P1) H */
-		dAxis[i] = vec_dot_pro(&dtmpb3, &subAxis[i]);
+		dAxis[i] = vec_dot_pro(&dtmpb3, &(subAxis[i]));
 
 		/* helix radius */
 		/* r = |d*H|^2 - |(P2 - P1)|^2 / (2 |(P1 - P2) V2|) */
@@ -509,7 +517,7 @@ void helix_axis(Str *str, int seg)
 		t2 = vec_len_sq(&dtmpb3);
 		/* third term */
 		dtmpb4 = diff_vec(&tmpb2, &tmpb3);
-		t3 = vec_dot_pro(&dtmpb4, &axisNormal[i+1]);
+		t3 = vec_dot_pro(&dtmpb4, &(axisNormal[i+1]));
 		/* radius */
 		rAxis[i] = (t2 - t1) / (2 * t3);
 
@@ -526,7 +534,6 @@ void helix_axis(Str *str, int seg)
 	atom_to_vec(&tmpc1, &str->atom[str->seg[seg][0] + 1]);
 	tmpc2 = scale_vec(&axisNormal[1], rAxis[1]);
 	str->axispoint[seg][0] = sum_vec(&tmpc1, &tmpc2);
-	/*copy_vec(&str->axispoint[seg][0], &tmpc1);*/
 
 	/* C-terminus */
 	/* position vector to atom of last axisNormal */
@@ -534,13 +541,17 @@ void helix_axis(Str *str, int seg)
 	atom_to_vec(&tmpc3, &str->atom[str->seg[seg][0] + str->seg[seg][1] - 3]);
 	tmpc4 = scale_vec(&axisNormal[str->seg[seg][1] - 3], rAxis[str->seg[seg][1] - 3]);
 	str->axispoint[seg][1] = sum_vec(&tmpc3, &tmpc4);
-	/*copy_vec(&str->axispoint[seg][1], &tmpc3);*/
 
 	/* midpoint */
 	/* half-distance between N-terminus and C-terminus */
 	tmpc5 = diff_vec(&str->axispoint[seg][1], &str->axispoint[seg][0]);
 	tmpc5 = scale_vec(&tmpc5, 0.5);
 	str->axispoint[seg][2] = sum_vec(&str->axispoint[seg][0], &tmpc5);
+
+	fprintf(stderr, "%s:%d: seg %d, Nt %f, Ct %f, mi %f\n",
+				__FILE__, __LINE__, seg,
+				str->axispoint[seg][0].x, str->axispoint[seg][1].x,
+				str->axispoint[seg][2].x);
 
 	/*_______________________________________________________________________*/
     free(axisNormal);
@@ -551,9 +562,10 @@ void helix_axis(Str *str, int seg)
 
 /*____________________________________________________________________________*/
 /* strand axis */
-/* The strand axis is the average vetor of (all) pairs of connection
+/* The strand axis is the average vector of (all) pairs of connection
 	vectors (subAxis) between the midpoints of the difference vectors
 	C1,C2 and C2,C3. */
+/* defines axis points: 0: N-terminus, 1: C-terminus, 2: midpoint */
  void strand_axis(Str *str, int seg)
 {
 	unsigned int i;
@@ -564,12 +576,11 @@ void helix_axis(Str *str, int seg)
 	/* subaxes */
 	subAxis = safe_malloc((str->seg[seg][1] - 1) * sizeof(Vec));
 
-	for (i = 1; i < str->seg[seg][1] - 1; ++ i)
-	{
+	for (i = 1; i < str->seg[seg][1] - 1; ++ i) {
 		/* vectors to angle forming atoms */
-		atom_to_vec(&tmp1, &str->atom[str->seg[seg][0] + i - 1]);
-		atom_to_vec(&tmp2, &str->atom[str->seg[seg][0] + i]);
-		atom_to_vec(&tmp3, &str->atom[str->seg[seg][0] + i + 1]);
+		atom_to_vec(&tmp1, &(str->atom[str->seg[seg][0] + i - 1]));
+		atom_to_vec(&tmp2, &(str->atom[str->seg[seg][0] + i]));
+		atom_to_vec(&tmp3, &(str->atom[str->seg[seg][0] + i + 1]));
 		/* half-length connecting vectors between atoms are on axis */
 		dtmp1 = diff_vec(&tmp2, &tmp1);
 		dtmp1 = scale_vec(&dtmp1, 0.5);
@@ -577,25 +588,30 @@ void helix_axis(Str *str, int seg)
 		dtmp2 = scale_vec(&dtmp2, 0.5);
 		/* strand axis: connecting vector is in direction of axis */
 		subAxis[i] = diff_vec(&dtmp2, &dtmp1);
-		/* axis point N-terminus : position vector to first atom of segment */
+		/* axis point N-terminus: position vector to first atom of segment */
 		if (i == 1)
 			str->axispoint[seg][0] = sum_vec(&tmp1, &dtmp1);
-		/* axis point C-terminus : position vector to last atom of segment */
+		/* axis point C-terminus: position vector to last atom of segment */
 		if (i == str->seg[seg][1] - 2)
 			str->axispoint[seg][1] = sum_vec(&tmp1, &dtmp1);
 	}
-	/* axis point midpoint : half-distance between N-terminus and C-terminus */
+	/* axis point midpoint: half-distance between N-terminus and C-terminus */
 	tmp4 = diff_vec(&str->axispoint[seg][1], &str->axispoint[seg][0]);
 	tmp4 = scale_vec(&tmp4, 0.5);
 	str->axispoint[seg][2] = sum_vec(&str->axispoint[seg][0], &tmp4);
+
+	fprintf(stderr, "%s:%d: seg %d, Nt %f, Ct %f, mi %f\n",
+				__FILE__, __LINE__, seg,
+				str->axispoint[seg][0].x, str->axispoint[seg][1].x,
+				str->axispoint[seg][2].x);
 
 	free(subAxis);
 }
 
 /*____________________________________________________________________________*/
-/* secondary structure segment axis and pairwise angles */
+/* secondary structures' segment axis and pairwise angles */
 /* Define the three points that are needed per residue for diheder calculation:
-	NY, midpoint, CY. See routine 'phit_psit' (below) for further explanation. */ 
+	0: axis N-terminus, 1: axis C-terminus, 2: axis midpoint. */
 void segment_angle(Str *str)
 {
 	unsigned int seg;
@@ -603,53 +619,35 @@ void segment_angle(Str *str)
 	Vec d12, d23, d34;
 
 	/* define segment axes and points on axes */
-	for (seg = 0; seg < str->nseg; ++ seg)
-	{
-		/* assert valid sec.str. segment type */
-		assert(str->ss[str->seg[seg][0]][1] == 0 || \
-			   str->ss[str->seg[seg][0]][1]	== 1 || \
-			   str->ss[str->seg[seg][0]][1]	== 2);
-
-		/* STRAND axis */
-		if (str->ss[str->seg[seg][0]][1] == 0)
+	for (seg = 0; seg < str->nseg; ++ seg) {
+		/* strand axis */
+		if (str->ss[str->seg[seg][0]][1] == 0) {
 			strand_axis(str, seg);
-
-		/* HELIX axis */
-		if (str->ss[str->seg[seg][0]][1] == 1 || \
-			str->ss[str->seg[seg][0]][1] == 2)
+		/* helix (lh, rh) axis */
+		} else if (str->ss[str->seg[seg][0]][1] == 1 ||
+			str->ss[str->seg[seg][0]][1] == 2) {
 			helix_axis(str, seg);
+		} else {
+			fprintf(stderr, "%s%d: seg %d, ss %d: This should not happen!\n",
+					__FILE__, __LINE__, seg, str->ss[str->seg[seg][0]][1]);
+			exit(1);
+		}
 
-		if (seg == 0)
-			str->phit[seg][0] = 0; /* set first segment to angle zero */
-		else
-		{
-			/* vector version : precise approach */
-			d12 = diff_vec(&str->axispoint[seg-1][0], &str->axispoint[seg-1][2]);
-			d23 = diff_vec(&str->axispoint[seg][2], &str->axispoint[seg-1][2]);
-			d34 = diff_vec(&str->axispoint[seg][2], &str->axispoint[seg][1]);
+		if (seg == 0) {
+			str->phit[seg][0] = 0;
+		} else {
+			d12 = diff_vec(&(str->axispoint[seg - 1][0]), &(str->axispoint[seg - 1][2]));
+			d23 = diff_vec(&(str->axispoint[seg][2]), &(str->axispoint[seg - 1][2]));
+			d34 = diff_vec(&(str->axispoint[seg][2]), &(str->axispoint[seg][1]));
 
-			str->phit[seg][0] = abs(calc_diheder_vector(&d12, &d23, &d34));
+			/*fprintf(stderr, "%s:%d: seg %d, d23 %f, d34 %f\n",
+							__FILE__, __LINE__, seg, d23.x, d34.x);
+			*/
+
+			/*fprintf(stderr, "%s:%d: d12 %f, d23 %f, d34 %f\n",
+							__FILE__, __LINE__, d12.x, d23.x, d34.x);*/
+			/*str->phit[seg][0] = abs(calc_diheder_vector(&d12, &d23, &d34));*/
 		}
 	}
-
-	/* atom version : simplistic approach */
-	/*
-	for (seg = 1; seg < str->nseg; ++ seg)
-	{
-
-		atom1 = str->seg[seg-1][0];
-		atom2 = str->seg[seg-1][0] + str->seg[seg-1][1] - 1;
-		atom3 = str->seg[seg][0];
-		atom4 = str->seg[seg][0] + str->seg[seg][1] - 1;
-		fprintf(stderr, "atom: seg %d, atom1 %d nr %d, atom2 %d nr %d, 
-						 atom3 %d nr %d, atom4 %d nr %d, phit %f\n", 
-					seg, 
-					atom1, str->atom[atom1].atom_nr,
-					atom2, str->atom[atom2].atom_nr,
-					atom3, str->atom[atom3].atom_nr,
-					atom4, str->atom[atom4].atom_nr,
-					calc_diheder_atom(str, atom1, atom2, atom3, atom4));
-	}
-	*/
 }
 
