@@ -42,10 +42,10 @@ Documentation files for HTML, LaTeX and man pages will be created in the
 
 ## Usage
 ```
-	toplot --pdb <protein file>
-	  OPTIONS
-		--pdb	<PDB input>
-		--help
+toplot --pdb <protein file>
+  OPTIONS
+	--pdb	<PDB input>
+	--help
 ```
 
 - OUTPUT:	Topology string of protein
@@ -57,7 +57,7 @@ Documentation files for HTML, LaTeX and man pages will be created in the
 
 
 ## Copyright and Authors
-(C) 2006-2010 Jens Kleinjung
+(C) 2006-2017 Jens Kleinjung
 
 
 ## Availability and License
