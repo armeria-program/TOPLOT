@@ -7,6 +7,7 @@
 #ifndef STRUCTURE_H
 #define STRUCTURE_H
 
+#include "config.h"
 #include "toplot.h"
 
 #define PI (4.0 * atan(1.0))

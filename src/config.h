@@ -1,8 +1,8 @@
 /* src/config.h.  Generated from config.h.in by configure.  */
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Define to compile with DEBUG settings. */
-#define DEBUG 1
+/* Define to compile without DEBUG settings. */
+#define DEBUG 0
 
 /* Define to 1 if you have the <float.h> header file. */
 #define HAVE_FLOAT_H 1
@@ -64,7 +64,7 @@
 #define PACKAGE_NAME "toplot"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "toplot 1.1"
+#define PACKAGE_STRING "toplot 1.2"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "toplot"
@@ -73,7 +73,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.1"
+#define PACKAGE_VERSION "1.2"
 
 /* Define to compile with PROFILING settings. */
 /* #undef PROFILING */
@@ -82,7 +82,7 @@
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "1.1"
+#define VERSION "1.2"
 
 /* Define to rpl_malloc if the replacement function should be used. */
 /* #undef malloc */

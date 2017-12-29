@@ -117,7 +117,7 @@ void copy_vec(Vec *v1, Vec *v2)
 /* print vector */
 void print_vec(Vec *v)
 {
-	fprintf(stderr, "x %f, y %f, z %f\n", v->x, v->y, v->z);
+	fprintf(stdout, "x %f, y %f, z %f\n", v->x, v->y, v->z);
 }
 
 /*____________________________________________________________________________*/
@@ -344,17 +344,20 @@ void phi_psi(Str *str, int res)
 		str->ss[res][1] = -1; /* NA */
 	}
 
-	if (res == 0) {
-		fprintf (stderr, "%s:%d: res %d, psi %f, ss_element %d, type %d\n",
-			__FILE__, __LINE__, res, str->psi[res][0], str->ss[res][0], str->ss[res][1]);
-	} else if (res >= (str->nResidue - 1)) {
-		fprintf (stderr, "%s:%d: res %d, phi %f, ss_element %d, type %d\n",
-			__FILE__, __LINE__, res, str->phi[res][0], str->ss[res][0], str->ss[res][1]);
-	} else {
-		fprintf (stderr, "%s:%d: res %d, phi %f, psi %f, ss_element %d, type %d\n",
-			__FILE__, __LINE__,
-			res, str->phi[res][0], str->psi[res][0], str->ss[res][0], str->ss[res][1]);
 
+	if (DEBUG) {
+		if (res == 0) {
+			fprintf (stderr, "%s:%d: res %d, psi %f, ss_element %d, type %d\n",
+				__FILE__, __LINE__, res, str->psi[res][0], str->ss[res][0], str->ss[res][1]);
+		} else if (res >= (str->nResidue - 1)) {
+			fprintf (stderr, "%s:%d: res %d, phi %f, ss_element %d, type %d\n",
+				__FILE__, __LINE__, res, str->phi[res][0], str->ss[res][0], str->ss[res][1]);
+		} else {
+			fprintf (stderr, "%s:%d: res %d, phi %f, psi %f, ss_element %d, type %d\n",
+				__FILE__, __LINE__,
+				res, str->phi[res][0], str->psi[res][0], str->ss[res][0], str->ss[res][1]);
+
+		}
 	}
 }
 
@@ -427,9 +430,11 @@ void ss_segments(Str *str)
 		}
 		str->atom[i].seg = str->nseg; /* assign segment number to this atom */
 
-		fprintf (stderr, "%s:%d: res = %d, seg = %d, seg_start = %d, seg_length = %d\n",
+		if (DEBUG) {
+			fprintf (stderr, "%s:%d: res = %d, seg = %d, seg_start = %d, seg_length = %d\n",
 					__FILE__, __LINE__,
 					i, str->nseg, str->seg[str->nseg][0], str->seg[str->nseg][1]);
+		}
 	}
 	/* check last segment */
     if (((str->seg[str->nseg][1] < 5) &&
@@ -535,7 +540,6 @@ void helix_axis(Str *str, int seg)
 
 	/* average axis radius */
 	avrAxis /= (str->seg[seg][1] - 3); 
-	/*fprintf(stderr, "radius %f\n", avrAxis);*/
 
 	/*_______________________________________________________________________*/
 	/* N-terminus */
@@ -557,10 +561,13 @@ void helix_axis(Str *str, int seg)
 	tmpc5 = scale_vec(&tmpc5, 0.5);
 	str->axispoint[seg][2] = sum_vec(&str->axispoint[seg][0], &tmpc5);
 
-	fprintf(stderr, "%s:%d: seg %d, Nt %f, Ct %f, mi %f\n",
+
+	if (DEBUG) {
+		fprintf(stderr, "%s:%d: seg %d, Nt %f, Ct %f, mi %f\n",
 				__FILE__, __LINE__, seg,
 				str->axispoint[seg][0].x, str->axispoint[seg][1].x,
 				str->axispoint[seg][2].x);
+	}
 
 	/*_______________________________________________________________________*/
     free(axisNormal);
@@ -609,10 +616,12 @@ void helix_axis(Str *str, int seg)
 	tmp4 = scale_vec(&tmp4, 0.5);
 	str->axispoint[seg][2] = sum_vec(&str->axispoint[seg][0], &tmp4);
 
-	fprintf(stderr, "%s:%d: seg %d, Nt %f, Ct %f, mi %f\n",
+	if (DEBUG) {
+		fprintf(stderr, "%s:%d: seg %d, Nt %f, Ct %f, mi %f\n",
 				__FILE__, __LINE__, seg,
 				str->axispoint[seg][0].x, str->axispoint[seg][1].x,
 				str->axispoint[seg][2].x);
+	}
 
 	free(subAxis);
 }
@@ -649,8 +658,10 @@ void segment_angle(Str *str)
 			d23 = diff_vec(&(str->axispoint[seg][2]), &(str->axispoint[seg - 1][2]));
 			d34 = diff_vec(&(str->axispoint[seg][2]), &(str->axispoint[seg][1]));
 
-			fprintf(stderr, "%s:%d: axes distance vectors; d12 %f, d23 %f, d34 %f\n",
+			if (DEBUG) {
+				fprintf(stderr, "%s:%d: axes distance vectors; d12 %f, d23 %f, d34 %f\n",
 							__FILE__, __LINE__, d12.x, d23.x, d34.x);
+			}
 
 			str->phit[seg][0] = abs(calc_diheder_vector(&d12, &d23, &d34));
 		}

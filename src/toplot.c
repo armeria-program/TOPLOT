@@ -60,56 +60,6 @@ void error_exit(char *err_msg)
 }
 
 /*____________________________________________________________________________*/
-/* print Ramachandran data: plot PHI/PSI */
-void ramachandran(char *fileName, Str *str)
-{
-	FILE *file;
-	unsigned int i;
-
-	file = safe_open(fileName, "w");
-
-    for (i = 0; i < str->nAtom; ++ i)
-        fprintf(file, "%f\t%f\n", str->phi[i][0], str->psi[i][0]);
-
-	fclose(file);
-}
-
-/*____________________________________________________________________________*/
-/* print topology data: plot PHIt/PSIt */
-void topology(char *fileName, Str *str)
-{
-	FILE *file;
-	unsigned int i;
-
-	file = safe_open(fileName, "w");
-
-    for (i = 1; i < str->nseg; ++ i)
-        fprintf(file, "%f\n", str->phit[i][0]);
-
-	fclose(file);
-}
-
-/*____________________________________________________________________________*/
-/* print topology angles */
-void print_angles(Str *str, FILE *angFile)
-{
-	unsigned int i;
-	//float state;
-	//float angle;
-
-    for (i = 0; i < str->nseg; ++ i) {
-		//angle = str->phit[i][0];
-		//state = str->phit[i][1];
-
-		if (i == 0) {
-			/*fprintf(stderr, "seg %d, atoms %d to %d, type %d\n", 
-					i, str->seg[i][0], (str->seg[i][0] + str->seg[i][1] - 1), str->seg[i][2]);*/
-			continue;
-		}
-	}
-}
-
-/*____________________________________________________________________________*/
 int main(int argc, char *argv[])
 {
 	/* files */
@@ -129,12 +79,14 @@ int main(int argc, char *argv[])
 
 	/*____________________________________________________________________________*/
 	/* read PDB file */
+	fprintf(stdout, "Reading input structure %s\n", pdbFileName);
 	pdbfile = safe_open(pdbFileName, "r");
 	read_pdb(pdbfile, &pdb);
 	fclose(pdbfile);
 
 	/*____________________________________________________________________________*/
 	/* calculate topology */
+	fprintf(stdout, "Assessing topology\n");
 	/* dihedral angles (PHI, PSI) */
 	for (i = 0; i < pdb.sequence.length; ++ i) {
 		phi_psi(&pdb, i);
@@ -152,16 +104,11 @@ int main(int argc, char *argv[])
 	/* contacts between segments */
 	contact(&pdb);
 
+	/*____________________________________________________________________________*/
 	/* topology sequence */
+	fprintf(stdout, "Writing topology string %s.fastt\n", pdbFileName);
 	topseq = safe_malloc((pdb.nseg + 1) * sizeof(char));
 	topo_sequence(&pdb, &(topseq[0]), &(pdbFileName[0]));
-
-	/* angle output file */
-	/*
-	angFile = safe_open(angfileName, "w");
-	print_angles(&pdb, angFile);
-	fclose(angFile);
-	*/
 
     /*____________________________________________________________________________*/
 	/* free memory */

@@ -72,7 +72,9 @@ void contact(Str *str)
 		else
 			str->seg[i][3] = 0;
 	
-		fprintf(stderr, "%s:%d: seg %d, contCount %d\n",
+		if (DEBUG) {
+			fprintf(stderr, "%s:%d: seg %d, contCount %d\n",
 				__FILE__, __LINE__, i, contCount);
+		}
 	}
 }
