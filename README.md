@@ -19,7 +19,8 @@ alpha/alpha 10.5
 alpha/beta 8.0
 beta/beta 5.5
 ```
-	A contact is a binary property.
+A contact is a binary property.
+
 - Translate the state of each segment pair into a topology character.
 	The following alphabet is used (in angle degrees):
 ```
@@ -49,13 +50,12 @@ Documentation files for HTML, LaTeX and man pages will be created in the
 
 ## Usage
 ```
-toplot --pdb <protein file>
+toplot [--pdb ...] [OPTIONS ...]
   OPTIONS
-	--pdb	<PDB input>
 	--help
 ```
 
-- OUTPUT:	Topology string of protein
+- OUTPUT: Topology string of protein
 
 
 ## Exit Code and Output Streams
