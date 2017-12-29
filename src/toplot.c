@@ -84,6 +84,8 @@ int main(int argc, char *argv[])
 	read_pdb(pdbfile, &pdb);
 	fclose(pdbfile);
 
+	backbone_completeness(&pdb, 0);
+
 	/*____________________________________________________________________________*/
 	/* calculate topology */
 	fprintf(stdout, "Assessing topology\n");

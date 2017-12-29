@@ -37,6 +37,31 @@ __inline__ static char aacode(char *code3)
 }
 
 /*____________________________________________________________________________*/
+void backbone_completeness(Str *str, int ca)
+{
+	unsigned int i;
+
+	for (i = 0; i < str->nResidue; ++ i) {
+		if (strncmp(str->atom[(i * 3) + 1].atom_ne, " CA ", 4) != 0) {
+			fprintf(stderr, "Incomplete backbone at residue %d!\n", i);
+			exit(1);
+		}
+
+		if (ca == 0) {
+			if (strncmp(str->atom[(i * 3)].atom_ne, " N  ", 4) != 0) {
+				fprintf(stderr, "Incomplete backbone at residue %d!\n", i);
+				exit(1);
+			}
+
+			if (strncmp(str->atom[(i * 3) + 2].atom_ne, " C  ", 4) != 0) {
+				fprintf(stderr, "Incomplete backbone at residue %d!\n", i);
+				exit(1);
+			}
+		}
+	}
+}
+
+/*____________________________________________________________________________*/
 /* read PDB file */
 
 /*
@@ -140,7 +165,7 @@ void read_pdb(FILE *pdbInFile, Str *str)
 			str->atom[str->nAtom].atom_ne[j++] = line[i++];
 		str->atom[str->nAtom].atom_ne[j] = '\0';
 
-		/* decision about recording selected (CA) atoms */
+		/* recording only backbone atoms */
 		if	((strncmp(str->atom[str->nAtom].atom_ne, " N  ", 4) != 0) && 
 			 (strncmp(str->atom[str->nAtom].atom_ne, " CA ", 4) != 0) &&
 			 (strncmp(str->atom[str->nAtom].atom_ne, " C  ", 3) != 0)) { 
@@ -186,6 +211,12 @@ void read_pdb(FILE *pdbInFile, Str *str)
 
 		if (l == -1) /* skip duplicate assignment */
 			continue;
+
+		if (DEBUG) {
+			fprintf(stderr, "%s:%d: residue %d, atom %d, atom_name %s\n",
+				__FILE__, __LINE__,
+				str->nResidue, str->nAtom, str->atom[str->nAtom].atom_ne);
+		}
 
 		/* code for insertion of residues */
 		/*str->atom[str->nAtom].icode[0] = line[26];
@@ -260,9 +291,8 @@ void read_pdb(FILE *pdbInFile, Str *str)
 		/* initialise other values */
 		str->atom[str->nAtom].seg = 0;
 
-		++ str->nAtom;
-
 		/* increment atoms */
+		++ str->nAtom;
 		if (str->nAtom == allocated_atom)
 		{
 			allocated_atom += 64;

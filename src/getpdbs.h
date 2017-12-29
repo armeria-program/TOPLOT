@@ -10,5 +10,6 @@
 #include "structure.h"
 
 void read_pdb(FILE *pdbInFile, Str *str);
+void backbone_completeness(Str *str, int ca);
 
 #endif
