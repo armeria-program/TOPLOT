@@ -19,17 +19,17 @@ __inline__ static char aacode(char *code3)
 	char aa1 = 'O';
 	char *aa3[] = {"ALA","---","CYS","ASP","GLU","PHE","GLY","HIS","ILE","---","LYS","LEU","MET","ASN","---","PRO","GLN","ARG","SER","THR","---","VAL","TRP","---","TYR","---"};
 
-	for (i = 0; i < 26; ++i)
+	for (i = 0; i < 26; ++i) {
 		if (strncmp(code3, aa3[i], 3) == 0)
 		{
 			aa1 = i + 65;
 			break;
 		}
+	}
 
-	if (aa1 == 'O')
-	{
-		fprintf(stderr, "Exiting: Unkown residue type '%3s' in protein structure. Changing to standard residue \"GLY\".\n", code3);
-		exit(2);
+	if (aa1 == 'O') {
+		fprintf(stderr, "Warning: Unkown residue type '%3s' in protein structure:\n"
+						"\tCoding that as single-letter 'G'.\n", code3);
 		aa1 = 'G';
 	}
 	
@@ -40,21 +40,40 @@ __inline__ static char aacode(char *code3)
 void backbone_completeness(Str *str, int ca)
 {
 	unsigned int i;
+	unsigned int atom;
 
 	for (i = 0; i < str->nResidue; ++ i) {
+		if (DEBUG) {
+			atom = (i * 3);
+			fprintf(stderr, "%s:%d: res %d, res_nr %d, res_ne %s, atom %d, atom_ne %s\n",
+				__FILE__, __LINE__, i,
+				str->atom[atom].res_nr, str->atom[atom].res_ne,
+				atom, str->atom[atom].atom_ne);
+			atom = (i * 3) + 1;
+			fprintf(stderr, "%s:%d: res %d, res_nr %d, res_ne %s, atom %d, atom_ne %s\n",
+				__FILE__, __LINE__, i,
+				str->atom[atom].res_nr, str->atom[atom].res_ne,
+				atom, str->atom[atom].atom_ne);
+			atom = (i * 3) + 2;
+			fprintf(stderr, "%s:%d: res %d, res_nr %d, res_ne %s, atom %d, atom_ne %s\n",
+				__FILE__, __LINE__, i,
+				str->atom[atom].res_nr, str->atom[atom].res_ne,
+				atom, str->atom[atom].atom_ne);
+		}
+
 		if (strncmp(str->atom[(i * 3) + 1].atom_ne, " CA ", 4) != 0) {
-			fprintf(stderr, "Incomplete backbone at residue %d!\n", i);
+			fprintf(stderr, "Incomplete backbone (atom CA) at residue %d!\n", i);
 			exit(1);
 		}
 
 		if (ca == 0) {
 			if (strncmp(str->atom[(i * 3)].atom_ne, " N  ", 4) != 0) {
-				fprintf(stderr, "Incomplete backbone at residue %d!\n", i);
+				fprintf(stderr, "Incomplete backbone (atom N) at residue %d!\n", i);
 				exit(1);
 			}
 
 			if (strncmp(str->atom[(i * 3) + 2].atom_ne, " C  ", 4) != 0) {
-				fprintf(stderr, "Incomplete backbone at residue %d!\n", i);
+				fprintf(stderr, "Incomplete backbone (atom C) at residue %d!\n", i);
 				exit(1);
 			}
 		}
@@ -96,7 +115,7 @@ ________________________________________________________________________________
 
 void read_pdb(FILE *pdbInFile, Str *str)
 {
-	unsigned int i, j, l;
+	unsigned int i, j;
 	char line[80];
 	unsigned int allocated_atom = 64;
 	unsigned int allocated_residue = 64;
@@ -195,27 +214,11 @@ void read_pdb(FILE *pdbInFile, Str *str)
 		/* residue number */
 		str->atom[str->nAtom].res_nr = atoi(&line[22]);
 
-		/* skip duplicate assignments, 
-			e.g. when alternative locations are specified */
-		/* scan backwards for identical atom name in same residue */
-		for (l = 1; l < str->nAtom; ++ l) {
-			/*fprintf(stderr, "l=%d res0=%d, res1=%d\n", 
-				l,  str->atom[str->nAtom].res_nr, str->atom[str->nAtom - l].res_nr);*/
-			if (str->atom[str->nAtom].res_nr == str->atom[str->nAtom - l].res_nr) {
-				if (strcmp(str->atom[str->nAtom].atom_ne, str->atom[str->nAtom - l].atom_ne) == 0) {
-					l = -1; /* flag up duplicate assignment */
-					break;
-				}
-			}
-		}
-
-		if (l == -1) /* skip duplicate assignment */
-			continue;
-
 		if (DEBUG) {
-			fprintf(stderr, "%s:%d: residue %d, atom %d, atom_name %s\n",
-				__FILE__, __LINE__,
-				str->nResidue, str->nAtom, str->atom[str->nAtom].atom_ne);
+			fprintf(stderr, "%s:%d: res %d, res_nr %d, res_ne %s, atom %d, atom_ne %s\n",
+				__FILE__, __LINE__, str->nResidue,
+				str->atom[str->nAtom].res_nr, str->atom[str->nAtom].res_ne,
+				str->nAtom, str->atom[str->nAtom].atom_ne);
 		}
 
 		/* code for insertion of residues */

@@ -109,7 +109,8 @@ int main(int argc, char *argv[])
 	/*____________________________________________________________________________*/
 	/* topology sequence */
 	fprintf(stdout, "Writing topology string %s.fastt\n", pdbFileName);
-	topseq = safe_malloc((pdb.nseg + 1) * sizeof(char));
+	/* potentially one chain per segment plus '\0' */
+	topseq = safe_malloc(((2 * pdb.nseg) + 1) * sizeof(char));
 	topo_sequence(&pdb, &(topseq[0]), &(pdbFileName[0]));
 
     /*____________________________________________________________________________*/

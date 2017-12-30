@@ -16,9 +16,6 @@
 #include <unistd.h>
 
 /*____________________________________________________________________________*/
-#define ALLATOM 1
-
-/*____________________________________________________________________________*/
 /* prototypes */
 extern void *safe_malloc(size_t), *safe_realloc(void *, size_t);
 extern float **allocate_matrix(unsigned int height, unsigned int width);

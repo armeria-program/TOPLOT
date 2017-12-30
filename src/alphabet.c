@@ -23,27 +23,30 @@ char topo_state(Str *str, int seg)
 
 	/* 3 sec.str. states: 1. beta/beta, 2. beta/alpha or alpha/beta, 3. alpha/alpha */
 	/* 1. beta/beta [A:C] */
-	if (ss1 == 0 && ss2 == 0)
+	if (ss1 == 0 && ss2 == 0) {
 		state = 65;
+	}
 	/* 2. beta/alpha [D:F] */
-	if (ss1 == 0 && ss2 > 0)
+	if (ss1 == 0 && ss2 > 0) {
 		state = 68;
+	}
 	/* 2. alpha/beta [G:I] */
-	if (ss1 > 0 && ss2 == 0)
+	if (ss1 > 0 && ss2 == 0) {
 		state = 71;
+	}
 	/* 3. alpha/alpha [J:L] */
-	if (ss1 > 0 && ss2 > 0)
+	if (ss1 > 0 && ss2 > 0) {
 		state = 74;
-
+	}
 	/* 3 angle states: [0:60[, [60:120[, [120:180[ */
 	state += floor((str->phit[seg][0]) / 60);
-	if ((str->phit[seg][0] / 60) == 3) 
+	if ((str->phit[seg][0] / 60) == 3) {
 		-- state;
-
+	}
 	/* 2 contact states: yes or no */
-	if (str->seg[seg][3] == 0)
+	if (str->seg[seg][3] == 0) {
 		state += 32; /* convert to lower case */
-
+	}
 	/*fprintf(stderr, "%s:%d: ss1 %d, ss2 %d state %d\n",
 				__FILE__, __LINE__, ss1, ss2, state);*/
 
@@ -57,21 +60,30 @@ char topo_state(Str *str, int seg)
 void topo_sequence(Str *str, char *topseq, char *pdbFileName)
 {
 	unsigned int seg = 0;
+	unsigned int nChain = 0;
 	char state;
 	char outFileName[256];
 	FILE *outFile;
 
-	if (str->nseg >= 2)
-	{
-		for (seg = 1; seg < str->nseg; ++ seg) /* for all other segments */
-		{
+	if (str->nseg >= 2) {
+		/* for all other segments */
+		for (seg = 1; seg < str->nseg; ++ seg) {
 			/* determine topology state */
 			state = topo_state(str, seg);
 			str->phit[seg][1] = (float)state;
 			/* add residue state to topology string */
-			if (seg == 1)
+			if (seg == 1) {
 				topseq[0] = tolower(state);
-			topseq[seg] = state;
+			}
+			/* insert '|'character into topology string
+				if chain changes between segments */
+			if (strcmp(str->atom[str->seg[seg][0]].chain_id, str->atom[str->seg[seg - 1][0]].chain_id) == 0) {
+				topseq[seg + nChain] = state;
+			} else {
+				topseq[seg + nChain] = '|';
+				++ nChain;
+				topseq[seg + nChain] = state;
+			}
 		}
 	}
 	topseq[seg] = '\0';	

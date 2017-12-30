@@ -1,6 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-AC_INIT(toplot, 1.2, jens@jkleinj.eu)
+AC_INIT(toplot, 1.3, jens@jkleinj.eu)
 
 AC_PREREQ([2.63])
 AC_CONFIG_SRCDIR([src/arg.c])
