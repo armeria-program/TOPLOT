@@ -1,7 +1,6 @@
 /*===============================================================================
- alphabet.h : topology alphabet
- Copyright (C) 2006 Jens Kleinjung
- GNU GPL License applies
+alphabet.h : topology alphabet
+Copyright (C) 2006-2018 Jens Kleinjung
 ================================================================================*/
 
 #ifndef ALPHABET_H
@@ -12,5 +11,6 @@
 /* prototypes */
 char topo_state(Str *str, int seg);
 void topo_sequence(Str *str, char *topseq, char *pdbfilename);
+void angle_array(Str *str, char *angleFileName);
 
 #endif

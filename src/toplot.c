@@ -1,7 +1,7 @@
 /*=============================================================================
 TOPLOT: TOPology pLOT
 Encode protein topology into string
-Copyright (C) 2006-2017 Jens Kleinjung
+Copyright (C) 2006-2018 Jens Kleinjung
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 FILE *safe_open(const char *name, const char *mode)
 {
     FILE *file = fopen(name, mode);
-	assert(file != 0);
+    assert(file != 0);
     return file;
 }
 
@@ -38,7 +38,7 @@ FILE *safe_open(const char *name, const char *mode)
 /* allocation */
 static void *check_non_null(void *ptr)
 {
-	assert (ptr != 0);
+    assert (ptr != 0);
     return ptr;
 }
 
@@ -55,78 +55,89 @@ void *safe_realloc(void *ptr, size_t size)
 /*____________________________________________________________________________*/
 void error_exit(char *err_msg)
 {
-	fprintf(stderr, "Exiting: Error: %s\n", err_msg);
-	exit(1);
+    fprintf(stderr, "Exiting: Error: %s\n", err_msg);
+    exit(1);
 }
 
 /*____________________________________________________________________________*/
 int main(int argc, char *argv[])
 {
-	/* files */
-    FILE *pdbfile; char *pdbFileName;
-    /*FILE *angFile; char *angfileName = "ang.dat";*/
+    /* files */
+	FILE *pdbFile;
+    char *pdbFileName;
+    char *angleFileName;
 
-	/* counters */
+    /* counters */
     unsigned int i = 0;
 
-	Str pdb; /* protein structure data structure */
-	char *topseq = 0; /* topology sequence */
-
-	/*____________________________________________________________________________*/
-	/* parse command line arguments */
-	pdbFileName = safe_malloc(200 * sizeof(char));
-	parse_args(argc, argv, pdbFileName);
-
-	/*____________________________________________________________________________*/
-	/* read PDB file */
-	fprintf(stdout, "Reading input structure %s\n", pdbFileName);
-	pdbfile = safe_open(pdbFileName, "r");
-	read_pdb(pdbfile, &pdb);
-	fclose(pdbfile);
-
-	backbone_completeness(&pdb, 0);
-
-	/*____________________________________________________________________________*/
-	/* calculate topology */
-	fprintf(stdout, "Assessing topology\n");
-	/* dihedral angles (PHI, PSI) */
-	for (i = 0; i < pdb.sequence.length; ++ i) {
-		phi_psi(&pdb, i);
-	}
-
-	/* sec.str. chain segments according to PHI/PSI angles */
-	ss_segments(&pdb);
-
-	/* axis angles of sec.str. segments */
-	pdb.axis = safe_malloc(pdb.nseg * sizeof(Vec));
-	pdb.axispoint = safe_malloc(pdb.nseg * sizeof(Vec [3]));
-
-	segment_angle(&pdb);
-
-	/* contacts between segments */
-	contact(&pdb);
-
-	/*____________________________________________________________________________*/
-	/* topology sequence */
-	fprintf(stdout, "Writing topology string %s.fastt\n", pdbFileName);
-	/* potentially one chain per segment plus '\0' */
-	topseq = safe_malloc(((2 * pdb.nseg) + 1) * sizeof(char));
-	topo_sequence(&pdb, &(topseq[0]), &(pdbFileName[0]));
+    Str pdb; /* protein structure data structure */
+    char *topseq = 0; /* topology sequence */
+    int angle = 0; /* print angles between sec.str. elements */
 
     /*____________________________________________________________________________*/
-	/* free memory */
-	free(pdb.sequence.res);
-	free(pdb.atom);
-	free(pdb.phi);
-	free(pdb.psi);
-	free(pdb.ss);
-	free(pdb.seg);
-	free(pdb.phit);
-	free(pdb.axis);
-	free(pdb.axispoint);
-	free(pdbFileName);
-	free(topseq);
+    /* parse command line arguments */
+    pdbFileName = safe_malloc(200 * sizeof(char));
+    parse_args(argc, argv, pdbFileName, &angle);
 
-	return 0;
+    /*____________________________________________________________________________*/
+    /* read PDB file */
+    fprintf(stdout, "Reading input structure %s\n", pdbFileName);
+    pdbFile = safe_open(pdbFileName, "r");
+    read_pdb(pdbFile, &pdb);
+    fclose(pdbFile);
+
+    backbone_completeness(&pdb, 0);
+
+    /*____________________________________________________________________________*/
+    /* calculate topology */
+    fprintf(stdout, "Assessing topology\n");
+    /* dihedral angles (PHI, PSI) */
+    for (i = 0; i < pdb.sequence.length; ++ i) {
+        phi_psi(&pdb, i);
+    }
+
+    /* sec.str. chain segments according to PHI/PSI angles */
+    ss_segments(&pdb);
+
+    /* axis angles of sec.str. segments */
+    pdb.axis = safe_malloc(pdb.nseg * sizeof(Vec));
+    pdb.axispoint = safe_malloc(pdb.nseg * sizeof(Vec [3]));
+
+    segment_angle(&pdb);
+
+    /* contacts between segments */
+    contact(&pdb);
+
+    /*____________________________________________________________________________*/
+    /* topology sequence */
+    fprintf(stdout, "Writing topology string %s.fastt\n", pdbFileName);
+    /* potentially one chain per segment plus '\0' */
+    topseq = safe_malloc(((2 * pdb.nseg) + 1) * sizeof(char));
+    topo_sequence(&pdb, &(topseq[0]), &(pdbFileName[0]));
+
+	/* angle array */
+    angleFileName = safe_malloc(209 * sizeof(char));
+	sprintf(&(angleFileName[0]), "%s%s", pdbFileName, ".angle.dat"); 
+
+    if (angle) {
+        angle_array(&pdb, &(angleFileName[0]));
+    }
+
+    /*____________________________________________________________________________*/
+    /* free memory */
+    free(pdb.sequence.res);
+    free(pdb.atom);
+    free(pdb.phi);
+    free(pdb.psi);
+    free(pdb.ss);
+    free(pdb.seg);
+    free(pdb.phit);
+    free(pdb.axis);
+    free(pdb.axispoint);
+    free(pdbFileName);
+    free(angleFileName);
+    free(topseq);
+
+    return 0;
 }
 

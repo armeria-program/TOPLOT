@@ -1,5 +1,7 @@
 /*==============================================================================
 helix.c : helix axis
+Code follows method described by Kahn P. (1989) "Defining the axis of a helix".
+Copyright (C) 2004-2018 Jens Kleinjung
 ==============================================================================*/
 
 #include "helix.h"

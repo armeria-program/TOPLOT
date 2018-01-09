@@ -1,7 +1,6 @@
 /*===============================================================================
- toplot.h : Main routine
- Copyright (C) 2006  Jens Kleinjung
- GNU GPL License applies
+toplot.h : Main routine
+Copyright (C) 2006-2018 Jens Kleinjung
 ================================================================================*/
 
 #ifndef TOPLOT_H

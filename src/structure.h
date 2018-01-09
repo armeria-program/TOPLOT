@@ -1,7 +1,6 @@
 /*===============================================================================
- structure.h : Routines for structure operations
- Copyright (C) 2004 Jens Kleinjung
- GNU GPL License applies
+structure.h : Routines for structure operations
+Copyright (C) 2004-2018 Jens Kleinjung
 ================================================================================*/
 
 #ifndef STRUCTURE_H

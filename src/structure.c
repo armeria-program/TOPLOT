@@ -1,6 +1,6 @@
 /*==============================================================================
  structure.c : Routines for structure operations
- Copyright (C) 2004-2006 Jens Kleinjung
+ Copyright (C) 2004-2018 Jens Kleinjung
  GNU GPL License applies
 ==============================================================================*/
 
@@ -632,39 +632,39 @@ void helix_axis(Str *str, int seg)
 	0: axis N-terminus, 1: axis C-terminus, 2: axis midpoint. */
 void segment_angle(Str *str)
 {
-	unsigned int seg;
-	/*int atom1, atom2, atom3, atom4;*/
-	Vec d12, d23, d34;
+    unsigned int seg;
+    /*int atom1, atom2, atom3, atom4;*/
+    Vec d12, d23, d34;
 
-	/* define segment axes and points on axes */
-	for (seg = 0; seg < str->nseg; ++ seg) {
-		/* strand axis */
-		if (str->ss[str->seg[seg][0]][1] == 0) {
-			strand_axis(str, seg);
-		/* helix (lh, rh) axis */
-		} else if (str->ss[str->seg[seg][0]][1] == 1 ||
-			str->ss[str->seg[seg][0]][1] == 2) {
-			helix_axis(str, seg);
-		} else {
-			fprintf(stderr, "%s%d: seg %d, ss %d: This should not happen!\n",
-					__FILE__, __LINE__, seg, str->ss[str->seg[seg][0]][1]);
-			exit(1);
-		}
+    /* define segment axes and points on axes */
+    for (seg = 0; seg < str->nseg; ++ seg) {
+        /* strand axis */
+        if (str->ss[str->seg[seg][0]][1] == 0) {
+            strand_axis(str, seg);
+        /* helix (lh, rh) axis */
+        } else if (str->ss[str->seg[seg][0]][1] == 1 ||
+            str->ss[str->seg[seg][0]][1] == 2) {
+            helix_axis(str, seg);
+        } else {
+            fprintf(stderr, "%s%d: seg %d, ss %d: This should not happen!\n",
+                            __FILE__, __LINE__, seg, str->ss[str->seg[seg][0]][1]);
+            exit(1);
+        }
 
-		if (seg == 0) {
-			str->phit[seg][0] = 0;
-		} else {
-			d12 = diff_vec(&(str->axispoint[seg - 1][0]), &(str->axispoint[seg - 1][2]));
-			d23 = diff_vec(&(str->axispoint[seg][2]), &(str->axispoint[seg - 1][2]));
-			d34 = diff_vec(&(str->axispoint[seg][2]), &(str->axispoint[seg][1]));
+        if (seg == 0) {
+            str->phit[seg][0] = 0;
+        } else {
+            d12 = diff_vec(&(str->axispoint[seg - 1][0]), &(str->axispoint[seg - 1][2]));
+            d23 = diff_vec(&(str->axispoint[seg][2]), &(str->axispoint[seg - 1][2]));
+            d34 = diff_vec(&(str->axispoint[seg][2]), &(str->axispoint[seg][1]));
 
-			if (DEBUG) {
-				fprintf(stderr, "%s:%d: axes distance vectors; d12 %f, d23 %f, d34 %f\n",
-							__FILE__, __LINE__, d12.x, d23.x, d34.x);
-			}
+            if (DEBUG) {
+                fprintf(stderr, "%s:%d: axes distance vectors; d12 %f, d23 %f, d34 %f\n",
+                            __FILE__, __LINE__, d12.x, d23.x, d34.x);
+            }
 
-			str->phit[seg][0] = abs(calc_diheder_vector(&d12, &d23, &d34));
-		}
-	}
+            str->phit[seg][0] = abs(calc_diheder_vector(&d12, &d23, &d34));
+        }
+    }
 }
 

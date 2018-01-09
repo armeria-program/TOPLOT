@@ -1,6 +1,7 @@
 /*==============================================================================
 arg.h : parse command line arguments
-(C) 2006 Alsseandro Pandini and Jens Kleinjung, GNU GPL License applies
+Copyright (C) 2006-2018 Jens Kleinjung
+Copyright (C) 2006 Alessandro Pandini
 ==============================================================================*/
 
 #ifndef ARG_H
@@ -9,6 +10,6 @@ arg.h : parse command line arguments
 #include "toplot.h"
 
 void usage( void );
-void parse_args(int argc, char **argv, char *pdbfilename);
+void parse_args(int argc, char **argv, char *pdbfilename, int *angle);
 
 #endif

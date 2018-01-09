@@ -1,7 +1,6 @@
 /*==============================================================================
- getpdbs.c : Routines for reading PDB structures
- Copyright (C) 2004 Jens Kleinjung
- GNU GPL Licence applies
+getpdbs.c : Routines for reading PDB structures
+Copyright (C) 2004-2018 Jens Kleinjung
 ==============================================================================*/
 
 #include <stdio.h>

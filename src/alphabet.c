@@ -1,7 +1,6 @@
 /*==============================================================================
- alphabet.c : topology alphabet
- Copyright (C) 2006 Jens Kleinjung
- GNU GPL License applies
+alphabet.c : topology alphabet
+Copyright (C) 2006-2018 Jens Kleinjung
 ==============================================================================*/
 
 #include <stdio.h>
@@ -48,7 +47,7 @@ char topo_state(Str *str, int seg)
 		state += 32; /* convert to lower case */
 	}
 	/*fprintf(stderr, "%s:%d: ss1 %d, ss2 %d state %d\n",
-				__FILE__, __LINE__, ss1, ss2, state);*/
+							__FILE__, __LINE__, ss1, ss2, state);*/
 
 	assert((state >= 65) && (state <= 122));
 
@@ -94,6 +93,26 @@ void topo_sequence(Str *str, char *topseq, char *pdbFileName)
 		fprintf(outFile, ">%s\n%s\n", pdbFileName, topseq);
 	else
 		fprintf(stderr, "Topology file of PDB structure %s is void!\n",
-					pdbFileName);
+							pdbFileName);
 	fclose(outFile);
 }
+
+/*___________________________________________________________________________*/
+/* generate angle array */
+void angle_array(Str *str, char *angleFileName)
+{
+	unsigned int seg = 0;
+	FILE *angleFile; 
+
+	angleFile = safe_open(angleFileName, "w");
+
+	for (seg = 0; seg < str->nseg; ++ seg) {
+		fprintf(angleFile, "%3.0f", str->phit[seg][0]);
+		if (seg < str->nseg - 1) {
+			fprintf(angleFile, "\t");
+		} else {
+			fprintf(angleFile, "\n");
+		}		
+	}
+}
+

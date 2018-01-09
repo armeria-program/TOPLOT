@@ -1,7 +1,6 @@
 /*===============================================================================
- getpdbs.h : Read PDB structures 
- Copyright (C) 2004 Jens Kleinjung
- GNU GPL License applies
+getpdbs.h : Read PDB structures 
+Copyright (C) 2004-2018 Jens Kleinjung
 ================================================================================*/
 
 #ifndef GETPDBS_H
